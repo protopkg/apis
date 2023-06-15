@@ -3,9 +3,9 @@
 def _make_protopkg_library_rule(rctx, pctx):
     r = gazelle.Rule(
         kind = "protopkg_library",
-        name = pctx.proto_library.base_name + "_pkg",
+        name = pctx.proto_library.base_name + "_protopkg",
         attrs = {
-            "deps": rctx.deps + [pctx.proto_library.base_name],
+            "dep": pctx.proto_library.name,
             "visibility": rctx.visibility,
         },
     )

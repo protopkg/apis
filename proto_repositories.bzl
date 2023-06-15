@@ -99,5 +99,6 @@ def proto_repositories():
         cfgs = ["//:rules_proto_config.yaml"],
         build_directives = [
             "gazelle:proto_language go enable true",
+            "gazelle:proto_language protopkg enable true",
         ],
     )

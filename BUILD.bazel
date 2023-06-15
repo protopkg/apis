@@ -33,6 +33,7 @@ proto_gazelle(
     ],
     cfgs = ["//:rules_proto_config.yaml"],
     command = "update",
+    data = ["//gazelle/language/protopkg:starlark"],
     gazelle = ":gazelle-protopkg",
     imports = [
         "@googleapis//:imports.csv",

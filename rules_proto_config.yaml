@@ -1,3 +1,5 @@
+starlarkRules:
+  - "gazelle/language/protopkg/protopkg_library.star%protopkg_library"
 plugins:
   - name: cpp
     implementation: builtin:cpp
@@ -41,14 +43,14 @@ languages:
   - name: go
     plugins:
       - protoc-gen-go
-      - protoc-gen-go-grpc
     rules:
       - proto_compile
       - proto_go_library
     enabled: false
-  # - name: protopkg
-  #   plugins:
-  #     - protoc-gen-go
-  #   rules:
-  #     - protopkg_library
-  #   enabled: false
+  - name: protopkg
+    plugins:
+      - protoc-gen-go
+      - protoc-gen-go-grpc
+    rules:
+      - protopkg_library
+    enabled: false

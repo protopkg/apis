@@ -20,3 +20,9 @@ go_library(
         "@bazel_gazelle//rule:go_default_library",
     ],
 )
+
+filegroup(
+    name = "starlark",
+    srcs = ["protopkg_library.star"],
+    visibility = ["//visibility:public"],
+)
