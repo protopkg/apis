@@ -8,6 +8,7 @@ exports_files(["rules_proto_config.yaml"])
 
 # -- Gazelle language "resolve" ---
 # gazelle:resolve go go github.com/stackb/rules_proto/pkg/protoc @build_stack_rules_proto//pkg/protoc
+# gazelle:resolve go go google.golang.org/protobuf/types/descriptorpb @org_golang_google_protobuf//types/descriptorpb
 
 # -- Gazelle language "go" ---
 # gazelle:prefix github.com/protopkg/apis
@@ -28,9 +29,6 @@ gazelle_binary(
 
 proto_gazelle(
     name = "gazelle",
-    args = [
-        "-proto_rule=gazelle/language/protopkg/protopkg_library.star%protopkg_library",
-    ],
     cfgs = ["//:rules_proto_config.yaml"],
     command = "update",
     data = ["//gazelle/language/protopkg:starlark"],

@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "protopkg_library_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/protopkg/apis/cmd/protopkg_library",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@org_golang_google_protobuf//proto",
+        "@org_golang_google_protobuf//types/descriptorpb",
+        # "@protoapis//google/protobuf:descriptor_go_proto",
+        "@stackbuildapis//build/stack/protobuf/package/v1alpha1:package_go_proto",
+    ],
+)
+
+go_binary(
+    name = "protopkg_library",
+    embed = [":protopkg_library_lib"],
+    visibility = ["//visibility:public"],
+)
