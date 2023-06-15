@@ -7,9 +7,7 @@ def proto_repositories():
             "gazelle:exclude testdata",
             "gazelle:exclude google/protobuf/compiler/ruby",
             "gazelle:exclude google/protobuf/util",
-            "gazelle:proto_language go enable false",
-            "gazelle:proto_language cpp enable false",
-            "gazelle:proto_language descriptor enable true",
+            "gazelle:proto_language go enable true",
         ],
         build_file_expunge = True,
         build_file_proto_mode = "file",
@@ -78,19 +76,19 @@ def proto_repositories():
     )
 
     # Branch: master
-    # Commit: 39246f2de80568026d9b410afe5b7b57e28141bd
-    # Date: 2023-06-15 02:55:52 +0000 UTC
-    # URL: https://github.com/stackb/apis/commit/39246f2de80568026d9b410afe5b7b57e28141bd
+    # Commit: 7ce401f0533926ee4ad8b121402a08baa7d9371f
+    # Date: 2023-06-15 19:20:24 +0000 UTC
+    # URL: https://github.com/stackb/apis/commit/7ce401f0533926ee4ad8b121402a08baa7d9371f
     #
-    # Merge pull request #5 from stackb/go_package
+    # Merge pull request #6 from stackb/proto-package
     #
-    # Add go_package options
-    # Size: 8779 (8.8 kB)
+    # Redo changes to package.proto
+    # Size: 9053 (9.1 kB)
     proto_repository(
         name = "stackbuildapis",
-        sha256 = "7569b86a0509870d6a225cb213f723c8731b61fb6c73bf783178881d3be63469",
-        strip_prefix = "apis-39246f2de80568026d9b410afe5b7b57e28141bd",
-        urls = ["https://github.com/stackb/apis/archive/39246f2de80568026d9b410afe5b7b57e28141bd.tar.gz"],
+        sha256 = "f0cc3c2431121e90a6828df7ec4b53c3ee113be7f34ed3c8dc7d9a411407dd69",
+        strip_prefix = "apis-7ce401f0533926ee4ad8b121402a08baa7d9371f",
+        urls = ["https://github.com/stackb/apis/archive/7ce401f0533926ee4ad8b121402a08baa7d9371f.tar.gz"],
         imports = [
             "@protoapis//:imports.csv",
             "@googleapis//:imports.csv",

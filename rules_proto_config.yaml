@@ -20,6 +20,10 @@ rules:
     implementation: stackb:rules_proto:proto_compile
     visibility:
       - //visibility:public
+  # - name: protopkg_library
+  #   implementation: protopkg:apis:protopkg_library
+  #   visibility:
+  #     - //visibility:public
   - name: proto_descriptor_set
     implementation: stackb:rules_proto:proto_descriptor_set
     visibility:
@@ -42,3 +46,9 @@ languages:
       - proto_compile
       - proto_go_library
     enabled: false
+  # - name: protopkg
+  #   plugins:
+  #     - protoc-gen-go
+  #   rules:
+  #     - protopkg_library
+  #   enabled: false
