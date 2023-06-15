@@ -20,10 +20,10 @@ rules:
     implementation: stackb:rules_proto:proto_compile
     visibility:
       - //visibility:public
-  # - name: protopkg_library
-  #   implementation: protopkg:apis:protopkg_library
-  #   visibility:
-  #     - //visibility:public
+  - name: protopkg_library
+    implementation: gazelle/language/protopkg/protopkg_library.star%protopkg_library
+    visibility:
+      - //visibility:public
   - name: proto_descriptor_set
     implementation: stackb:rules_proto:proto_descriptor_set
     visibility:

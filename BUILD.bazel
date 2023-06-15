@@ -28,6 +28,9 @@ gazelle_binary(
 
 proto_gazelle(
     name = "gazelle",
+    args = [
+        "-proto_rule=gazelle/language/protopkg/protopkg_library.star%protopkg_library",
+    ],
     cfgs = ["//:rules_proto_config.yaml"],
     command = "update",
     gazelle = ":gazelle-protopkg",

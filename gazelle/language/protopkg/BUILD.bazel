@@ -7,7 +7,6 @@ go_library(
         "fix.go",
         "generate.go",
         "language.go",
-        "protopkg_library.go",
         "resolve.go",
     ],
     importpath = "github.com/protopkg/apis/gazelle/language/protopkg",
@@ -19,6 +18,5 @@ go_library(
         "@bazel_gazelle//repo:go_default_library",
         "@bazel_gazelle//resolve:go_default_library",
         "@bazel_gazelle//rule:go_default_library",
-        "@build_stack_rules_proto//pkg/protoc",
     ],
 )
