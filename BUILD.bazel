@@ -16,15 +16,17 @@ exports_files(["rules_proto_config.yaml"])
 # gazelle:proto_language descriptor enabled true
 
 gazelle_binary(
-    name = "gazelle-protobuf",
-    languages = DEFAULT_LANGUAGES,
+    name = "gazelle-protopkg",
+    languages = DEFAULT_LANGUAGES + [
+        "//gazelle/language/protopkg",
+    ],
 )
 
 proto_gazelle(
     name = "gazelle",
     cfgs = ["//:rules_proto_config.yaml"],
     command = "update",
-    gazelle = ":gazelle-protobuf",
+    gazelle = ":gazelle-protopkg",
     imports = [
         "@googleapis//:imports.csv",
         "@protoapis//:imports.csv",
