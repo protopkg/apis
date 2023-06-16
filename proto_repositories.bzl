@@ -3,11 +3,15 @@ load("@build_stack_rules_proto//rules/proto:proto_repository.bzl", "proto_reposi
 def proto_repositories():
     proto_repository(
         name = "protoapis",
+        source_owner = "protocolbuffers",
+        source_repo = "protobuf",
+        source_prefix = "src",
         build_directives = [
             "gazelle:exclude testdata",
             "gazelle:exclude google/protobuf/compiler/ruby",
             "gazelle:exclude google/protobuf/util",
             "gazelle:proto_language go enable true",
+            "gazelle:proto_language protopkg enable true",
         ],
         build_file_expunge = True,
         build_file_proto_mode = "file",
@@ -59,11 +63,14 @@ def proto_repositories():
 
     proto_repository(
         name = "googleapis",
+        source_owner = "googleapis",
+        source_repo = "googleapis",
         build_directives = [
             "gazelle:exclude google/ads/googleads/v12/services",
             "gazelle:exclude google/ads/googleads/v13/services",
             "gazelle:exclude google/ads/googleads/v14/services",
             "gazelle:proto_language go enable true",
+            "gazelle:proto_language protopkg enable true",
         ],
         imports = ["@protoapis//:imports.csv"],
         build_file_expunge = True,
@@ -86,6 +93,8 @@ def proto_repositories():
     # Size: 9108 (9.1 kB)
     proto_repository(
         name = "stackbuildapis",
+        source_owner = "stackb",
+        source_repo = "apis",
         sha256 = "43157d2cdd33d9a5609944ea5292d167d175fd384abb80a820433a3729ff1970",
         strip_prefix = "apis-c8f6cc11ff7bbd812d5c9f35f42ba213030fc62e",
         urls = ["https://github.com/stackb/apis/archive/c8f6cc11ff7bbd812d5c9f35f42ba213030fc62e.tar.gz"],

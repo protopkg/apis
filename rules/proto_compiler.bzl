@@ -12,8 +12,8 @@ def _proto_compiler_impl(ctx):
     )
 
     return [
-        OutputGroupInfo(
-            proto_compiler_version = depset([ctx.outputs.version]),
+        DefaultInfo(
+            files = depset([ctx.outputs.version]),
         ),
         ProtoCompilerInfo(
             name = ctx.attr.compiler_name,

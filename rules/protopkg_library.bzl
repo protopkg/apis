@@ -1,26 +1,46 @@
-load("//rules:providers.bzl", "ProtoPackageInfo")
+load("//rules:providers.bzl", "ProtoCompilerInfo", "ProtoPackageInfo")
 
 def _protopkg_library_impl(ctx):
-    proto_info = ctx.attr.dep[ProtoInfo]
+    proto_repository_info_files = ctx.attr.proto_repository_info[DefaultInfo].files.to_list()
+    if len(proto_repository_info_files) != 1:
+        fail("expected a single file for in the label list for 'proto_repository_info'")
 
-    protoset = proto_info.direct_descriptor_set
+    proto_info = ctx.attr.dep[ProtoInfo]
+    proto_descriptor_set_file = proto_info.direct_descriptor_set
+    proto_compiler_info = ctx.attr.proto_compiler[ProtoCompilerInfo]
+    proto_repository_info_file = proto_repository_info_files[0]
+    proto_compiler_info_file = ctx.actions.declare_file(ctx.label.name + ".compiler.info.json")
+    proto_compiler_version_file = proto_compiler_info.version_file
+
+    ctx.actions.write(proto_compiler_info_file, struct(
+        name = proto_compiler_info.name,
+        version_file = proto_compiler_version_file.path,
+    ).to_json())
 
     args = ctx.actions.args()
-    args.add("-repo", ctx.label.workspace_name)
-    args.add("-pkg", ctx.label.package)
-    args.add("-name", ctx.label.name)
-    args.add("-protoset", protoset.path)
+    args.add("-proto_descriptor_set_file", proto_descriptor_set_file.path)
+    args.add("-proto_repository_info_file", proto_repository_info_file.path)
+    args.add("-proto_compiler_info_file", proto_compiler_info_file.path)
+    args.add("-proto_compiler_version_file", proto_compiler_version_file.path)
+
+    inputs = [
+        proto_descriptor_set_file,
+        proto_compiler_info_file,
+        proto_compiler_version_file,
+        proto_repository_info_file,
+    ]
 
     ctx.actions.run(
         executable = ctx.executable._tool,
         arguments = [args] + ["-proto_out", ctx.outputs.proto.path],
-        inputs = [protoset],
+        inputs = inputs,
         outputs = [ctx.outputs.proto],
     )
+
     ctx.actions.run(
         executable = ctx.executable._tool,
         arguments = [args] + ["-json_out", ctx.outputs.json.path],
-        inputs = [protoset],
+        inputs = inputs,
         outputs = [ctx.outputs.json],
     )
 
@@ -44,6 +64,14 @@ protopkg_library = rule(
             doc = "proto_library dependency",
             mandatory = True,
             providers = [ProtoInfo],
+        ),
+        "proto_repository_info": attr.label(
+            mandatory = True,
+            allow_files = True,
+        ),
+        "proto_compiler": attr.label(
+            mandatory = True,
+            providers = [ProtoCompilerInfo],
         ),
         "_tool": attr.label(
             default = str(Label("//cmd/protopkg_library")),

@@ -3,26 +3,35 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
+	pppb "github.com/stackb/apis/build/stack/protobuf/package/v1alpha1"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
+)
 
-	pppb "github.com/stackb/apis/build/stack/protobuf/package/v1alpha1"
+const (
+	protoCompilerInfoFileFlagName    = "proto_compiler_info_file"
+	protoCompilerVersionFileFlagName = "proto_compiler_version_file"
+	protoDescriptorSetFileFlagName   = "proto_descriptor_set_file"
+	protoRepositoryInfoFileFlagName  = "proto_repository_info_file"
+	protoOutputFileFlagName          = "proto_out"
+	jsonOutputFileFlagName           = "json_out"
 )
 
 var (
-	labelRepo = flag.String("repo", "", "bazel label repo")
-	labelPkg  = flag.String("pkg", "", "bazel label package")
-	labelName = flag.String("name", "", "bazel label name")
-
-	protosetInFile = flag.String("protoset", "", "path to the compiled FileDescriptoSet")
-	protoOutFile   = flag.String("proto_out", "", "path of file to write the generated proto file")
-	jsonOutFile    = flag.String("json_out", "", "path of file to write the generated json file")
+	protoCompilerInfoFile    = flag.String(protoCompilerInfoFileFlagName, "", "path to the proto_compiler info file")
+	protoCompilerVersionFile = flag.String(protoCompilerVersionFileFlagName, "", "path to the proto_compiler version file")
+	protoDescriptorSetFile   = flag.String(protoDescriptorSetFileFlagName, "", "path to the compiled FileDescriptoSet")
+	protoRepositoryInfoFile  = flag.String(protoRepositoryInfoFileFlagName, "", "path to the proto_repository_info file")
+	protoOutputFile          = flag.String(protoOutputFileFlagName, "", "path of file to write the generated proto file")
+	jsonOutputFile           = flag.String(jsonOutputFileFlagName, "", "path of file to write the generated json file")
 )
 
 func main() {
@@ -34,20 +43,24 @@ func main() {
 func run() error {
 	flag.Parse()
 
-	if *protosetInFile == "" {
-		log.Fatal("-protoset file is required")
-	}
+	protoDescriptorSet, protoDescriptorSetData, err := readProtoDescriptorSetFile(protoDescriptorSetFileFlagName, *protoDescriptorSetFile)
 
-	var ds descriptorpb.FileDescriptorSet
-	data, err := os.ReadFile(*protosetInFile)
+	repository, err := readProtoRepositoryInfoFile(protoRepositoryInfoFileFlagName, *protoRepositoryInfoFile)
 	if err != nil {
-		return fmt.Errorf("reading protoset file: %w", err)
-	}
-	if err := proto.Unmarshal(data, &ds); err != nil {
-		return fmt.Errorf("unmarshaling protoset file: %w", err)
+		return err
 	}
 
-	pkg, err := makeProtoPackage(data, &ds)
+	compiler, err := readProtoCompilerInfoFile(protoCompilerInfoFileFlagName, *protoCompilerInfoFile)
+	if err != nil {
+		return err
+	}
+
+	version, err := readProtoCompilerVersionFile(protoRepositoryInfoFileFlagName, *protoCompilerVersionFile)
+	if err != nil {
+		return err
+	}
+
+	pkg, err := makeProtoPackage(protoDescriptorSetData, protoDescriptorSet, repository, compiler, version)
 	if err != nil {
 		return err
 	}
@@ -59,19 +72,77 @@ func run() error {
 	return nil
 }
 
+func readProtoDescriptorSetFile(flagName, filename string) (*descriptorpb.FileDescriptorSet, []byte, error) {
+	if filename == "" {
+		return nil, nil, fmt.Errorf("flag required but not provided: %s", flagName)
+	}
+	var ds descriptorpb.FileDescriptorSet
+	data, err := os.ReadFile(*protoDescriptorSetFile)
+	if err != nil {
+		return nil, nil, fmt.Errorf("reading proto_descriptor_set_file: %w", err)
+	}
+	if err := proto.Unmarshal(data, &ds); err != nil {
+		return nil, nil, fmt.Errorf("unmarshaling proto_descriptor_set_file: %w", err)
+	}
+	return &ds, data, nil
+}
+
+func readProtoCompilerVersionFile(flagName, filename string) (string, error) {
+	if filename == "" {
+		return "", fmt.Errorf("flag required but not provided: %s", flagName)
+	}
+
+	data, err := os.ReadFile(*protoCompilerVersionFile)
+	if err != nil {
+		return "", fmt.Errorf("reading %s: %w", flagName, err)
+	}
+	return strings.TrimSpace(string(data)), nil
+}
+
+func readProtoCompilerInfoFile(flagName, filename string) (*ProtoCompilerInfo, error) {
+	if filename == "" {
+		return nil, fmt.Errorf("flag required but not provided: %s", flagName)
+	}
+	data, err := os.ReadFile(*protoCompilerInfoFile)
+	if err != nil {
+		return nil, fmt.Errorf("reading %s: %w", flagName, err)
+	}
+	log.Println("compiler-info:", string(data))
+	var info ProtoCompilerInfo
+	if err := json.Unmarshal(data, &info); err != nil {
+		return nil, fmt.Errorf("unmarshaling %s: %w", flagName, err)
+	}
+	return &info, nil
+}
+
+func readProtoRepositoryInfoFile(flagName, filename string) (*ProtoRepositoryInfo, error) {
+	if filename == "" {
+		return nil, fmt.Errorf("flag required but not provided: %s", flagName)
+	}
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("reading %s: %w", flagName, err)
+	}
+	var info ProtoRepositoryInfo
+	if err := json.Unmarshal(data, &info); err != nil {
+		return nil, fmt.Errorf("unmarshaling %s: %w", flagName, err)
+	}
+	return &info, nil
+}
+
 func writeOutputFiles(pkg *pppb.ProtoPackage) error {
 	data, err := proto.Marshal(pkg)
 	if err != nil {
 		return fmt.Errorf("marshaling generated data: %v", err)
 	}
 
-	if *protoOutFile != "" {
-		if err := os.WriteFile(*protoOutFile, data, os.ModePerm); err != nil {
+	if *protoOutputFile != "" {
+		if err := os.WriteFile(*protoOutputFile, data, os.ModePerm); err != nil {
 			return fmt.Errorf("writing proto file: %w", err)
 		}
 	}
 
-	if *jsonOutFile != "" {
+	if *jsonOutputFile != "" {
 		marshaler := protojson.MarshalOptions{
 			Multiline: true,
 			Indent:    "  ",
@@ -80,24 +151,53 @@ func writeOutputFiles(pkg *pppb.ProtoPackage) error {
 		if err != nil {
 			return fmt.Errorf("marshaling json: %w", err)
 		}
-		if err := os.WriteFile(*jsonOutFile, []byte(jsonstr), os.ModePerm); err != nil {
+		if err := os.WriteFile(*jsonOutputFile, []byte(jsonstr), os.ModePerm); err != nil {
 			return fmt.Errorf("writing json file: %w", err)
 		}
 	}
 	return nil
 }
 
-func makeProtoPackage(data []byte, ds *descriptorpb.FileDescriptorSet) (*pppb.ProtoPackage, error) {
+func makeProtoPackage(data []byte,
+	ds *descriptorpb.FileDescriptorSet,
+	repositoryInfo *ProtoRepositoryInfo,
+	compilerInfo *ProtoCompilerInfo,
+	compilerVersion string,
+) (*pppb.ProtoPackage, error) {
+	if repositoryInfo.SourceHost == "" {
+		return nil, fmt.Errorf("SourceHost is required")
+	}
+	if repositoryInfo.SourceOwner == "" {
+		return nil, fmt.Errorf("SourceOwner is required")
+	}
+	if repositoryInfo.SourceRepo == "" {
+		return nil, fmt.Errorf("SourceName is required")
+	}
+
 	assets := make([]*pppb.ProtoAsset, len(ds.File))
-	for _, file := range ds.File {
+	for i, file := range ds.File {
 		var asset pppb.ProtoAsset
 		asset.File = file
 		asset.Sha256 = sha256Bytes(data)
 		asset.Size = uint64(len(data))
-		assets = append(assets, &asset)
+		assets[i] = &asset
 	}
 
 	pkg := &pppb.ProtoPackage{
+		Location: &pppb.ProtoSourceLocation{
+			Repository: &pppb.ProtoRepository{
+				Server:     repositoryInfo.SourceHost,
+				Name:       repositoryInfo.SourceRepo,
+				Owner:      repositoryInfo.SourceOwner,
+				Repository: fmt.Sprintf("%s/%s/%s", repositoryInfo.SourceHost, repositoryInfo.SourceOwner, repositoryInfo.SourceRepo),
+			},
+			Commit: repositoryInfo.Commit,
+			Prefix: repositoryInfo.SourcePrefix,
+		},
+		Compiler: &pppb.ProtoCompiler{
+			Name:    compilerInfo.Name,
+			Version: compilerVersion,
+		},
 		Assets: assets,
 	}
 

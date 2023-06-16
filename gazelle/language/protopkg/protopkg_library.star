@@ -6,6 +6,8 @@ def _make_protopkg_library_rule(rctx, pctx):
         name = pctx.proto_library.base_name + "_protopkg",
         attrs = {
             "dep": pctx.proto_library.name,
+            "proto_compiler": "@//:proto_compiler",
+            "proto_repository_info": "//:proto_repository_info",
             "visibility": rctx.visibility,
         },
     )

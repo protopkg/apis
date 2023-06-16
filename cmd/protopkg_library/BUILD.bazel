@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
     name = "protopkg_library_lib",
-    srcs = ["main.go"],
+    srcs = [
+        "main.go",
+        "types.go",
+    ],
     importpath = "github.com/protopkg/apis/cmd/protopkg_library",
     visibility = ["//visibility:private"],
     deps = [

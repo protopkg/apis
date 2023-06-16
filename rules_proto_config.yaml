@@ -1,5 +1,6 @@
 starlarkRules:
   - "gazelle/language/protopkg/protopkg_library.star%protopkg_library"
+  - "gazelle/language/protopkg/proto_repository_info.star%proto_repository_info"
 plugins:
   - name: cpp
     implementation: builtin:cpp
@@ -24,6 +25,10 @@ rules:
       - //visibility:public
   - name: protopkg_library
     implementation: gazelle/language/protopkg/protopkg_library.star%protopkg_library
+    visibility:
+      - //visibility:public
+  - name: proto_repository_info
+    implementation: gazelle/language/protopkg/proto_repository_info.star%proto_repository_info
     visibility:
       - //visibility:public
   - name: proto_descriptor_set
@@ -52,5 +57,6 @@ languages:
       - protoc-gen-go
       - protoc-gen-go-grpc
     rules:
+    
       - protopkg_library
     enabled: false
