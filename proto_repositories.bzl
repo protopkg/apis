@@ -76,19 +76,19 @@ def proto_repositories():
     )
 
     # Branch: master
-    # Commit: 7ce401f0533926ee4ad8b121402a08baa7d9371f
-    # Date: 2023-06-15 19:20:24 +0000 UTC
-    # URL: https://github.com/stackb/apis/commit/7ce401f0533926ee4ad8b121402a08baa7d9371f
+    # Commit: c8f6cc11ff7bbd812d5c9f35f42ba213030fc62e
+    # Date: 2023-06-16 00:59:39 +0000 UTC
+    # URL: https://github.com/stackb/apis/commit/c8f6cc11ff7bbd812d5c9f35f42ba213030fc62e
     #
-    # Merge pull request #6 from stackb/proto-package
+    # Merge pull request #7 from stackb/proto-source-location
     #
-    # Redo changes to package.proto
-    # Size: 9053 (9.1 kB)
+    # Refactor with proto source location
+    # Size: 9108 (9.1 kB)
     proto_repository(
         name = "stackbuildapis",
-        sha256 = "f0cc3c2431121e90a6828df7ec4b53c3ee113be7f34ed3c8dc7d9a411407dd69",
-        strip_prefix = "apis-7ce401f0533926ee4ad8b121402a08baa7d9371f",
-        urls = ["https://github.com/stackb/apis/archive/7ce401f0533926ee4ad8b121402a08baa7d9371f.tar.gz"],
+        sha256 = "43157d2cdd33d9a5609944ea5292d167d175fd384abb80a820433a3729ff1970",
+        strip_prefix = "apis-c8f6cc11ff7bbd812d5c9f35f42ba213030fc62e",
+        urls = ["https://github.com/stackb/apis/archive/c8f6cc11ff7bbd812d5c9f35f42ba213030fc62e.tar.gz"],
         imports = [
             "@protoapis//:imports.csv",
             "@googleapis//:imports.csv",

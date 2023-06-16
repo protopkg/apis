@@ -1,5 +1,6 @@
 load("@bazel_gazelle//:def.bzl", "gazelle", "gazelle_binary")
 load("@build_stack_rules_proto//rules:proto_gazelle.bzl", "proto_gazelle")
+load("//rules:proto_compiler.bzl", "proto_compiler")
 
 exports_files(["rules_proto_config.yaml"])
 
@@ -49,4 +50,8 @@ gazelle(
         "-prune=true",
     ],
     command = "update-repos",
+)
+
+proto_compiler(
+    name = "protoc",
 )
