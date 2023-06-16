@@ -5,7 +5,7 @@ def _protopkg_library_impl(ctx):
     if len(proto_repository_info_files) != 1:
         fail("expected a single file for in the label list for 'proto_repository_info'")
 
-    proto_info = ctx.attr.dep[ProtoInfo]
+    proto_info = ctx.attr.proto[ProtoInfo]
     proto_descriptor_set_file = proto_info.direct_descriptor_set
     proto_compiler_info = ctx.attr.proto_compiler[ProtoCompilerInfo]
     proto_repository_info_file = proto_repository_info_files[0]
@@ -61,10 +61,14 @@ def _protopkg_library_impl(ctx):
 protopkg_library = rule(
     implementation = _protopkg_library_impl,
     attrs = {
-        "dep": attr.label(
+        "proto": attr.label(
             doc = "proto_library dependency",
             mandatory = True,
             providers = [ProtoInfo],
+        ),
+        "deps": attr.label_list(
+            doc = "protopkg_library dependencies",
+            providers = [ProtoPackageInfo],
         ),
         "proto_repository_info": attr.label(
             mandatory = True,

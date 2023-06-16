@@ -57,6 +57,5 @@ languages:
       - protoc-gen-go
       - protoc-gen-go-grpc
     rules:
-    
       - protopkg_library
     enabled: false
