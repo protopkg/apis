@@ -75,3 +75,23 @@ gazelle_dependencies()
 load("@build_stack_grpc_starlark//:go_repositories.bzl", build_stack_grpc_starlark_go_repositories = "go_repositories")
 
 build_stack_grpc_starlark_go_repositories()
+
+# ----------------------------------------------------
+# @io_bazel_rules_docker
+# ----------------------------------------------------
+
+load(
+    "@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
+    docker_toolchain_configure = "toolchain_configure",
+)
+
+docker_toolchain_configure(
+    name = "docker_config",
+)
+
+load("@io_bazel_rules_docker//go:image.bzl", _go_image_repos = "repositories")
+load("@io_bazel_rules_docker//repositories:repositories.bzl", container_repositories = "repositories")
+
+container_repositories()
+
+_go_image_repos()

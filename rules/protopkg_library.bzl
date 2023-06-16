@@ -52,6 +52,7 @@ def _protopkg_library_impl(ctx):
             json = depset([ctx.outputs.json]),
         ),
         ProtoPackageInfo(
+            label = ctx.label,
             proto_package_file = ctx.outputs.proto,
             proto_info = proto_info,
         ),

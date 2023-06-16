@@ -16,6 +16,7 @@ def repositories():
     build_stack_rules_proto()
     protobuf_core_deps()
     build_stack_grpc_starlark()
+    io_bazel_rules_docker()
 
 def protobuf_core_deps():
     bazel_skylib()  # via com_google_protobuf
@@ -162,4 +163,29 @@ def build_stack_grpc_starlark():
         sha256 = "32bc91f46b05df239636c55eaa1bce37e25ac93f45b009e1b4ca4155431ab2a3",
         strip_prefix = "grpc-starlark-61023a037ccd7bee93a7143d68b9c77ca93258bf",
         urls = ["https://github.com/stackb/grpc-starlark/archive/61023a037ccd7bee93a7143d68b9c77ca93258bf.tar.gz"],
+    )
+
+def io_bazel_rules_docker():
+    # Branch: master
+    # Commit: 8e70c6bcb584a15a8fd061ea489b933c0ff344ca
+    # Date: 2023-04-27 20:06:36 +0000 UTC
+    # URL: https://github.com/bazelbuild/rules_docker/commit/8e70c6bcb584a15a8fd061ea489b933c0ff344ca
+    #
+    # The OCI distribution spec only allows lower case letter in container repository (#2252)
+    #
+    # name
+    # (https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pulling-manifests),
+    # this doesn't bode well with Bazel package path using upper case.
+    #
+    # To be clear: docker itself is ok with upper case:
+    # https://ktomk.github.io/pipelines/doc/DOCKER-NAME-TAG.html.
+    #
+    # Picking the common denominator here, and force lower case on pkg path.
+    # Size: 601209 (601 kB)
+    _maybe(
+        http_archive,
+        name = "io_bazel_rules_docker",
+        sha256 = "c27b53d53a5704fb676078843f1a674ff196ab4fb9d7f6b74cf7748b47c9374f",
+        strip_prefix = "rules_docker-8e70c6bcb584a15a8fd061ea489b933c0ff344ca",
+        urls = ["https://github.com/bazelbuild/rules_docker/archive/8e70c6bcb584a15a8fd061ea489b933c0ff344ca.tar.gz"],
     )
