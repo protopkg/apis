@@ -30,7 +30,9 @@ go_register_toolchains(version = "1.18.2")
 # go_repository overrides
 # ----------------------------------------------------
 
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+load("//:go_repositories.bzl", "go_repositories")
+
+go_repositories()
 
 # ----------------------------------------------------
 # @build_stack_rules_proto
@@ -50,21 +52,13 @@ load("@build_stack_rules_proto//deps:go_core_deps.bzl", "go_core_deps")
 
 go_core_deps()
 
-go_core_deps()
-
-# ----------------------------------------------------
-# external go dependencies
-# ----------------------------------------------------
-
-load("//:go_repositories.bzl", "go_repositories")
-
-go_repositories()
-
 # ----------------------------------------------------
 # @bazel_gazelle
 # ----------------------------------------------------
 # gazelle:repository_macro go_repositories.bzl%go_repositories
 # gazelle:repo bazel_gazelle
+
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
 gazelle_dependencies()
 

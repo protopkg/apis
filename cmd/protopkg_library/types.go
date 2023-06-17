@@ -13,6 +13,7 @@ type ProtoRepositoryInfo struct {
 	SourceOwner  string   `json:"source_owner"`
 	SourceRepo   string   `json:"source_repo"`
 	SourcePrefix string   `json:"source_prefix"`
+	SourceCommit string   `json:"source_commit"`
 }
 
 // ProtoCompilerInfo is the json type for a file that is written at the by the

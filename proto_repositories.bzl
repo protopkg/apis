@@ -5,6 +5,7 @@ def proto_repositories():
         name = "protoapis",
         source_owner = "protocolbuffers",
         source_repo = "protobuf",
+        source_commit = "a74f54b724bdc2fe0bfc271f4dc0ceb159805625",
         source_prefix = "src",
         build_directives = [
             "gazelle:exclude testdata",
@@ -65,6 +66,7 @@ def proto_repositories():
         name = "googleapis",
         source_owner = "googleapis",
         source_repo = "googleapis",
+        source_commit = "e115ab1839cb6e1bd953e40337b7e84001291766",
         build_directives = [
             "gazelle:exclude google/ads/googleads/v12/services",
             "gazelle:exclude google/ads/googleads/v13/services",
@@ -83,21 +85,22 @@ def proto_repositories():
     )
 
     # Branch: master
-    # Commit: c8f6cc11ff7bbd812d5c9f35f42ba213030fc62e
-    # Date: 2023-06-16 00:59:39 +0000 UTC
-    # URL: https://github.com/stackb/apis/commit/c8f6cc11ff7bbd812d5c9f35f42ba213030fc62e
+    # Commit: c06d514dba1376592c986d1355ae2b15ddd32923
+    # Date: 2023-06-16 22:08:17 +0000 UTC
+    # URL: https://github.com/stackb/apis/commit/c06d514dba1376592c986d1355ae2b15ddd32923
     #
-    # Merge pull request #7 from stackb/proto-source-location
+    # Merge pull request #8 from stackb/proto-source-location
     #
-    # Refactor with proto source location
-    # Size: 9108 (9.1 kB)
+    # Refactor package.proto with source location
+    # Size: 9179 (9.2 kB)
     proto_repository(
         name = "stackbuildapis",
         source_owner = "stackb",
         source_repo = "apis",
-        sha256 = "43157d2cdd33d9a5609944ea5292d167d175fd384abb80a820433a3729ff1970",
-        strip_prefix = "apis-c8f6cc11ff7bbd812d5c9f35f42ba213030fc62e",
-        urls = ["https://github.com/stackb/apis/archive/c8f6cc11ff7bbd812d5c9f35f42ba213030fc62e.tar.gz"],
+        source_commit = "c06d514dba1376592c986d1355ae2b15ddd32923",
+        sha256 = "55d1852fc8801107d5bd3deb56c800edf30f4febfbb452913faa2639c6c75023",
+        strip_prefix = "apis-c06d514dba1376592c986d1355ae2b15ddd32923",
+        urls = ["https://github.com/stackb/apis/archive/c06d514dba1376592c986d1355ae2b15ddd32923.tar.gz"],
         imports = [
             "@protoapis//:imports.csv",
             "@googleapis//:imports.csv",

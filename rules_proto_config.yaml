@@ -48,6 +48,7 @@ languages:
   - name: go
     plugins:
       - protoc-gen-go
+      - protoc-gen-go-grpc
     rules:
       - proto_compile
       - proto_go_library
@@ -55,7 +56,6 @@ languages:
   - name: protopkg
     plugins:
       - protoc-gen-go
-      - protoc-gen-go-grpc
     rules:
       - protopkg_library
     enabled: false

@@ -58,7 +58,7 @@ def _protopkg_library_impl(ctx):
         ),
     ]
 
-protopkg_library = rule(
+_protopkg_library = rule(
     implementation = _protopkg_library_impl,
     attrs = {
         "proto": attr.label(
@@ -89,3 +89,65 @@ protopkg_library = rule(
         "json": "%{name}.pkg.json",
     },
 )
+
+def _protopkg_create_impl(ctx):
+    pkg = ctx.attr.pkg[ProtoPackageInfo]
+
+    script = """
+#/bin/bash
+set -euox pipefail
+find .
+{executable} -proto_package_file={file}
+    """.format(
+        executable = ctx.executable._protopkg_create.short_path,
+        file = pkg.proto_package_file.short_path,
+    )
+
+    ctx.actions.write(
+        ctx.outputs.executable,
+        script,
+        is_executable = True,
+    )
+
+    runfiles = ctx.runfiles(
+        files = [
+            ctx.executable._protopkg_create,
+            pkg.proto_package_file,
+        ],
+        collect_data = True,
+        collect_default = True,
+    )
+
+    return [DefaultInfo(
+        files = depset([ctx.outputs.executable]),
+        runfiles = runfiles,
+        executable = ctx.outputs.executable,
+    )]
+
+_protopkg_create = rule(
+    implementation = _protopkg_create_impl,
+    attrs = {
+        "pkg": attr.label(
+            doc = "protopkg_library dependency",
+            mandatory = True,
+            providers = [ProtoPackageInfo],
+        ),
+        "_protopkg_create": attr.label(
+            default = str(Label("//cmd/protopkg_create")),
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+    executable = True,
+)
+
+def protopkg_library(**kwargs):
+    name = kwargs.pop("name")
+    createname = name + ".create"
+
+    _protopkg_library(name = name, **kwargs)
+
+    _protopkg_create(
+        name = createname,
+        pkg = name,
+    )

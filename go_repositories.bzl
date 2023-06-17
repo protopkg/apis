@@ -318,8 +318,10 @@ def go_repositories():
         importpath = "google.golang.org/grpc",
         sum = "h1:fPVVDxY9w++VjTZsYvXWqEf9Rqar/e+9zYfxKK+W+YU=",
         version = "v1.50.0",
+        build_directives = [
+            "gazelle:resolve go go google.golang.org/genproto/googleapis/rpc/status @googleapis//google/rpc:status_go_proto",
+        ],
     )
-
     go_repository(
         name = "org_golang_google_grpc_cmd_protoc_gen_go_grpc",
         build_file_proto_mode = "disable_global",
