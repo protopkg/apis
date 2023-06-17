@@ -5,10 +5,10 @@ protopkg_layer(
     name = "protobuf-wkt",
     deps = [
         "@protoapis//google/protobuf:descriptor_protopkg",
-        "@stackbuildapis//build/stack/bzl/v1beta:application_protopkg",
-        "@stackbuildapis//build/stack/protobuf/compiler/v1alpha1:service_protopkg",
-        "@stackbuildapis//build/stack/protobuf/package/v1alpha1:package_protopkg",
-        "@stackbuildapis//build/stack/starlark/info/v1beta1:starlark_info_protopkg",
+        # "@stackbuildapis//build/stack/bzl/v1beta:application_protopkg",
+        # "@stackbuildapis//build/stack/protobuf/compiler/v1alpha1:service_protopkg",
+        # "@stackbuildapis//build/stack/protobuf/package/v1alpha1:package_protopkg",
+        # "@stackbuildapis//build/stack/starlark/info/v1beta1:starlark_info_protopkg",
     ],
 )
 
