@@ -17,3 +17,7 @@ require (
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
+
+replace (
+	github.com/stackb/apis/build/stack/protobuf/package/v1alpha1 => ../../stackb/apis/bazel-bin/build/stack/protobuf/package/v1alpha1/go.mod
+)
