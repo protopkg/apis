@@ -1,12 +1,14 @@
 package main
 
 import (
+	"crypto/x509"
 	"flag"
 	"fmt"
 	"os"
 
 	pppb "github.com/stackb/apis/build/stack/protobuf/package/v1alpha1"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
@@ -67,10 +69,20 @@ func run() error {
 }
 
 func createPackagesClient(address string) (pppb.PackagesClient, *grpc.ClientConn, error) {
-	conn, err := grpc.Dial(address)
+	pool, err := x509.SystemCertPool()
+	if err != nil {
+		return nil, nil, fmt.Errorf("getting system x509 cert pool: %w", err)
+	}
+
+	// var options []grpc.ClientConn
+	creds := credentials.NewClientTLSFromCert(pool, "")
+	conn, err := grpc.Dial(address,
+		grpc.WithTransportCredentials(creds),
+	)
 	if err != nil {
 		return nil, nil, fmt.Errorf("dialing connection: %w", err)
 	}
+
 	return pppb.NewPackagesClient(conn), conn, nil
 }
 

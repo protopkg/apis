@@ -95,12 +95,16 @@ def _protopkg_create_impl(ctx):
 
     script = """
 #/bin/bash
-set -euox pipefail
-find .
-{executable} -proto_package_file={file}
+set -euo pipefail
+
+{executable} \
+    -proto_package_file={file} \
+    -packages_server_address={address}
+
     """.format(
         executable = ctx.executable._protopkg_create.short_path,
         file = pkg.proto_package_file.short_path,
+        address = ctx.attr.address,
     )
 
     ctx.actions.write(
@@ -132,6 +136,9 @@ _protopkg_create = rule(
             mandatory = True,
             providers = [ProtoPackageInfo],
         ),
+        "address": attr.string(
+            default = "localhost:4500",
+        ),
         "_protopkg_create": attr.label(
             default = str(Label("//cmd/protopkg_create")),
             executable = True,
@@ -143,11 +150,10 @@ _protopkg_create = rule(
 
 def protopkg_library(**kwargs):
     name = kwargs.pop("name")
-    createname = name + ".create"
 
     _protopkg_library(name = name, **kwargs)
 
     _protopkg_create(
-        name = createname,
+        name = name + ".create",
         pkg = name,
     )
