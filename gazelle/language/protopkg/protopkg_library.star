@@ -22,7 +22,7 @@ def _provide_protopkg_library(rctx, pctx):
 
 protoc.Rule(
     name = "protopkg_library",
-    load_info = lambda: gazelle.LoadInfo(name = "@protopkg_apis//rules:protopkg_library.bzl", symbols = ["protopkg_library"]),
+    load_info = lambda: gazelle.LoadInfo(name = "@com_github_protopkg_protoregistry//rules:protopkg_library.bzl", symbols = ["protopkg_library"]),
     kind_info = lambda: gazelle.KindInfo(resolve_attrs = {"deps": True}),
     provide_rule = _provide_protopkg_library,
 )
