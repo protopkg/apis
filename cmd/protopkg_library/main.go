@@ -187,11 +187,11 @@ func makeProtoPackage(data []byte,
 
 	assets := make([]*pppb.ProtoAsset, len(ds.File))
 	for i, file := range ds.File {
-		var asset pppb.ProtoAsset
-		asset.File = file
-		asset.Sha256 = sha256Bytes(data)
-		asset.Size = uint64(len(data))
-		assets[i] = &asset
+		asset, err := makeProtoAsset(file)
+		if err != nil {
+			return nil, fmt.Errorf("making ProtoAsset %d %s: %w", i, *file.Name, err)
+		}
+		assets[i] = asset
 	}
 
 	pkg := &pppb.ProtoPackage{
@@ -215,8 +215,14 @@ func makeProtoPackage(data []byte,
 }
 
 func makeProtoAsset(file *descriptorpb.FileDescriptorProto) (*pppb.ProtoAsset, error) {
+	data, err := proto.Marshal(file)
+	if err != nil {
+		return nil, fmt.Errorf("marshaling asset FileDescriptorProto: %w", err)
+	}
 	return &pppb.ProtoAsset{
-		File: file,
+		File:   file,
+		Sha256: sha256Bytes(data),
+		Size:   uint64(len(data)),
 	}, nil
 }
 

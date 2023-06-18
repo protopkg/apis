@@ -18,6 +18,7 @@ def _provide_protopkg_library(rctx, pctx):
     return struct(
         name = "protopkg_library",
         rule = lambda: _make_protopkg_library_rule(rctx, pctx),
+        experimental_resolve_attr = "deps",
     )
 
 protoc.Rule(
