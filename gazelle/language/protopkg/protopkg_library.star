@@ -8,7 +8,7 @@ def _make_protopkg_library_rule(rctx, pctx):
             "proto": pctx.proto_library.name,
             "deps": [],
             "proto_compiler": "@//:proto_compiler",
-            "proto_repository_info": "//:proto_repository_info",
+            "proto_repository": "//:proto_repository",
             "visibility": rctx.visibility,
         },
     )

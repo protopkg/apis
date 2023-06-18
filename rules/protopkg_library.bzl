@@ -1,33 +1,27 @@
+load("@build_stack_rules_proto//rules:providers.bzl", "ProtoRepositoryInfo")
 load("//rules:providers.bzl", "ProtoCompilerInfo", "ProtoPackageInfo")
 
 def _protopkg_library_impl(ctx):
-    proto_repository_info_files = ctx.attr.proto_repository_info[DefaultInfo].files.to_list()
-    if len(proto_repository_info_files) != 1:
-        fail("expected a single file for in the label list for 'proto_repository_info'")
-
+    proto_repository_info = ctx.attr.proto_repository[ProtoRepositoryInfo]
+    proto_compiler_info = ctx.attr.proto_compiler[ProtoCompilerInfo]
     proto_info = ctx.attr.proto[ProtoInfo]
     proto_descriptor_set_file = proto_info.direct_descriptor_set
-    proto_compiler_info = ctx.attr.proto_compiler[ProtoCompilerInfo]
-    proto_repository_info_file = proto_repository_info_files[0]
-    proto_compiler_info_file = ctx.actions.declare_file(ctx.label.name + ".compiler.info.json")
     proto_compiler_version_file = proto_compiler_info.version_file
-
-    ctx.actions.write(proto_compiler_info_file, struct(
-        name = proto_compiler_info.name,
-        version_file = proto_compiler_version_file.path,
-    ).to_json())
 
     args = ctx.actions.args()
     args.add("-proto_descriptor_set_file", proto_descriptor_set_file.path)
-    args.add("-proto_repository_info_file", proto_repository_info_file.path)
-    args.add("-proto_compiler_info_file", proto_compiler_info_file.path)
+    args.add("-proto_repository_host", proto_repository_info.source_host)
+    args.add("-proto_repository_owner", proto_repository_info.source_owner)
+    args.add("-proto_repository_repo", proto_repository_info.source_repo)
+    args.add("-proto_repository_commit", proto_repository_info.source_commit)
+    args.add("-proto_repository_prefix", proto_repository_info.source_prefix)
+    args.add("-proto_repository_commit", proto_repository_info.source_commit)
+    args.add("-proto_compiler_name", proto_compiler_info.name)
     args.add("-proto_compiler_version_file", proto_compiler_version_file.path)
 
     inputs = [
         proto_descriptor_set_file,
-        proto_compiler_info_file,
         proto_compiler_version_file,
-        proto_repository_info_file,
     ]
 
     ctx.actions.run(
@@ -70,9 +64,9 @@ _protopkg_library = rule(
             doc = "protopkg_library dependencies",
             providers = [ProtoPackageInfo],
         ),
-        "proto_repository_info": attr.label(
+        "proto_repository": attr.label(
             mandatory = True,
-            allow_files = True,
+            providers = [ProtoRepositoryInfo],
         ),
         "proto_compiler": attr.label(
             mandatory = True,
