@@ -220,7 +220,7 @@ func makeProtoAsset(file *descriptorpb.FileDescriptorProto) (*pppb.ProtoAsset, e
 	if err != nil {
 		return nil, fmt.Errorf("marshaling asset FileDescriptorProto: %w", err)
 	}
-	hash, err := protoHash(file)
+	hash, err := protoreflectHash(file)
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +228,7 @@ func makeProtoAsset(file *descriptorpb.FileDescriptorProto) (*pppb.ProtoAsset, e
 		File:   file,
 		Sha256: sha256Bytes(data),
 		Size:   uint64(len(data)),
-		Hash:   fmt.Sprintf("%x", hash),
+		Hash:   hash,
 	}, nil
 }
 
@@ -241,11 +241,11 @@ func errorFlagRequired(name flagName) error {
 	return fmt.Errorf("flag required but not provided: -%s", name)
 }
 
-func protoHash(msg proto.Message) (string, error) {
+func protoreflectHash(msg proto.Message) (string, error) {
 	hasher := protoreflecthash.NewHasher()
 	data, err := hasher.HashProto(msg.ProtoReflect())
 	if err != nil {
 		return "", fmt.Errorf("hashing proto: %w", err)
 	}
-	return hex.EncodeToString(data), nil
+	return fmt.Sprintf("protoreflecthash.v0:%x", data), nil
 }
