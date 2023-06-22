@@ -81,20 +81,20 @@ def proto_repositories():
     )
 
     # Branch: master
-    # Commit: 69f5c537d3e1f9149efaf31a4b993c7f784ad1a7
-    # Date: 2023-06-22 22:43:12 +0000 UTC
-    # URL: https://github.com/stackb/apis/commit/69f5c537d3e1f9149efaf31a4b993c7f784ad1a7
+    # Commit: 523727eebe7ebec685b43bb08342f9cdbcc43a0e
+    # Date: 2023-06-22 22:59:16 +0000 UTC
+    # URL: https://github.com/stackb/apis/commit/523727eebe7ebec685b43bb08342f9cdbcc43a0e
     #
-    # Merge pull request #12 from stackb/protopkg-hash
+    # Merge pull request #13 from stackb/protopkg-deps
     #
-    # Add ProtoPkg.hash field
-    # Size: 37370 (37 kB)
+    # Add ProtoPackage.dependencies
+    # Size: 37422 (37 kB)
     github_proto_repository(
         name = "stackbuildapis",
         owner = "stackb",
         repo = "apis",
-        commit = "69f5c537d3e1f9149efaf31a4b993c7f784ad1a7",
-        sha256 = "ccbab33a749af27e22911618687a3b59867146dd04d3882ad642153552c31a85",
+        commit = "523727eebe7ebec685b43bb08342f9cdbcc43a0e",
+        sha256 = "478b392bf0f4999105ac0a20ef43e1ea6409382ff09d316f888e6d27973f82d1",
         cfgs = ["//:rules_proto_config.yaml"],
         reresolve_known_proto_imports = True,
         imports = [
