@@ -237,10 +237,16 @@ func makeProtoPackage(data []byte,
 		assets[i] = asset
 	}
 
+	hash, err := makeProtoPackageHash(assets)
+	if err != nil {
+		return nil, fmt.Errorf("calculating proto package hash: %w", err)
+	}
+
 	pkg := &pppb.ProtoPackage{
 		Location: location,
 		Compiler: compiler,
 		Assets:   assets,
+		Hash:     hash,
 	}
 
 	prefix := pkg.Location.Prefix
@@ -302,7 +308,7 @@ func makeProtoAssetDependencies(deps []string) ([]string, error) {
 	for i, dep := range deps {
 		asset, ok := assetDeps[dep]
 		if !ok {
-			return nil, fmt.Errorf("asset dependency not found: %s")
+			return nil, fmt.Errorf("asset dependency not found: %s", dep)
 		}
 		results[i] = assetKey(*asset.File.Name, asset.Hash)
 	}
@@ -319,4 +325,10 @@ func collectAssetDeps(pps *pppb.ProtoPackageSet) {
 
 func assetKey(name, hash string) string {
 	return fmt.Sprintf("%s@%s", name, hash)
+}
+
+func makeProtoPackageHash(assets []*pppb.ProtoAsset) (string, error) {
+	return protoreflectHash(&pppb.ProtoPackage{
+		Assets: assets,
+	})
 }
