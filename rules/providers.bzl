@@ -6,6 +6,7 @@ ProtoPackageInfo = provider(
     fields = {
         "label": "the label of the protopkg_library rule",
         "proto_package_file": "the generated proto-encoded ProtoPackage file (type https://bazel.build/rules/lib/builtins/File)",
+        "proto_package_direct_deps": "the direct ProtoPackage direct dependencies of this one",
         "proto_info": "the underlying ProtoInfo provider (type https://docs.bazel.build/versions/5.4.1/skylark/lib/ProtoInfo.html)",
     },
 )

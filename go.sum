@@ -6,8 +6,8 @@ github.com/golang/protobuf v1.5.3 h1:KhyjKVUg7Usr/dYsdSqoFveMYd5ko72D+zANwlG1mmg
 github.com/golang/protobuf v1.5.3/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiuN0vRsmY=
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.9 h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
-github.com/stackb/apis v0.0.0-20230622210940-972cfb5caeb5 h1:yuUcuWz+IzFBhF2Z/xYQ8VxRGhofaDpNDxg6V/CWKlo=
-github.com/stackb/apis v0.0.0-20230622210940-972cfb5caeb5/go.mod h1:C0bMEDXz5BCxB0d3hxFAKoRHfxGi67i2AD9rz2WEB+E=
+github.com/stackb/apis v0.0.0-20230622212435-4d8a06d507ef h1:dljyAWsLax09sViJ+pzXYwhL+moxvZkwsfpuB6zjj8Y=
+github.com/stackb/apis v0.0.0-20230622212435-4d8a06d507ef/go.mod h1:C0bMEDXz5BCxB0d3hxFAKoRHfxGi67i2AD9rz2WEB+E=
 github.com/stackb/protoreflecthash v0.0.0-20230622204848-b7269c7fa663 h1:tOLG5lU3URfwF9LbD6p/l8tO+yxNQaVfsBNZ36nmlUk=
 github.com/stackb/protoreflecthash v0.0.0-20230622204848-b7269c7fa663/go.mod h1:zecFCufn9E+iqmv6zDhbwTv9pJskfXkZYBqcZIBSPBE=
 golang.org/x/net v0.10.0 h1:X2//UzNDwYmtCLn7To6G58Wr6f5ahEAQgKNzv9Y951M=

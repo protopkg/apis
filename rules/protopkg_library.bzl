@@ -2,6 +2,7 @@ load("@build_stack_rules_proto//rules:providers.bzl", "ProtoRepositoryInfo")
 load("//rules:providers.bzl", "ProtoCompilerInfo", "ProtoPackageInfo")
 
 def _protopkg_library_impl(ctx):
+    protopkg_direct_deps = [dep[ProtoPackageInfo] for dep in ctx.attr.deps]
     proto_repository_info = ctx.attr.proto_repository[ProtoRepositoryInfo]
     proto_compiler_info = ctx.attr.proto_compiler[ProtoCompilerInfo]
     proto_info = ctx.attr.proto[ProtoInfo]
@@ -18,11 +19,16 @@ def _protopkg_library_impl(ctx):
     args.add("-proto_repository_commit", proto_repository_info.source_commit)
     args.add("-proto_compiler_name", proto_compiler_info.name)
     args.add("-proto_compiler_version_file", proto_compiler_version_file.path)
+    args.add_joined(
+        "-proto_package_direct_dependency_files",
+        [dep.proto_package_file.path for dep in protopkg_direct_deps],
+        join_with = ",",
+    )
 
     inputs = [
         proto_descriptor_set_file,
         proto_compiler_version_file,
-    ]
+    ] + [dep.proto_package_file for dep in protopkg_direct_deps]
 
     ctx.actions.run(
         executable = ctx.executable._tool,
@@ -48,6 +54,7 @@ def _protopkg_library_impl(ctx):
         ProtoPackageInfo(
             label = ctx.label,
             proto_package_file = ctx.outputs.proto,
+            proto_package_direct_deps = protopkg_direct_deps,
             proto_info = proto_info,
         ),
     ]

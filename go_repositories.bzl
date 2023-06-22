@@ -116,8 +116,8 @@ def go_repositories():
         name = "com_github_stackb_apis",
         build_file_proto_mode = "disable_global",
         importpath = "github.com/stackb/apis",
-        sum = "h1:yuUcuWz+IzFBhF2Z/xYQ8VxRGhofaDpNDxg6V/CWKlo=",
-        version = "v0.0.0-20230622210940-972cfb5caeb5",
+        sum = "h1:dljyAWsLax09sViJ+pzXYwhL+moxvZkwsfpuB6zjj8Y=",
+        version = "v0.0.0-20230622212435-4d8a06d507ef",
     )
     go_repository(
         name = "com_github_stackb_protoreflecthash",

@@ -18,29 +18,35 @@ import (
 type flagName string
 
 const (
-	protoCompilerNameFlagName        flagName = "proto_compiler_name"
-	protoCompilerVersionFileFlagName flagName = "proto_compiler_version_file"
-	protoDescriptorSetFileFlagName   flagName = "proto_descriptor_set_file"
-	protoRepositoryHostFlagName      flagName = "proto_repository_host"
-	protoRepositoryOwnerFlagName     flagName = "proto_repository_owner"
-	protoRepositoryRepoFlagName      flagName = "proto_repository_repo"
-	protoRepositoryCommitFlagName    flagName = "proto_repository_commit"
-	protoRepositoryPrefixFlagName    flagName = "proto_repository_prefix"
-	protoOutputFileFlagName          flagName = "proto_out"
-	jsonOutputFileFlagName           flagName = "json_out"
+	protoCompilerNameFlagName                  flagName = "proto_compiler_name"
+	protoCompilerVersionFileFlagName           flagName = "proto_compiler_version_file"
+	protoDescriptorSetFileFlagName             flagName = "proto_descriptor_set_file"
+	protoRepositoryHostFlagName                flagName = "proto_repository_host"
+	protoRepositoryOwnerFlagName               flagName = "proto_repository_owner"
+	protoRepositoryRepoFlagName                flagName = "proto_repository_repo"
+	protoRepositoryCommitFlagName              flagName = "proto_repository_commit"
+	protoRepositoryPrefixFlagName              flagName = "proto_repository_prefix"
+	protoPackageDirectDependenciesFileFlagName flagName = "proto_package_direct_dependency_files"
+	protoOutputFileFlagName                    flagName = "proto_out"
+	jsonOutputFileFlagName                     flagName = "json_out"
 )
 
 var (
-	protoCompilerName        = flag.String(string(protoCompilerNameFlagName), "", "proto compiler name")
-	protoCompilerVersionFile = flag.String(string(protoCompilerVersionFileFlagName), "", "path to the proto_compiler version file")
-	protoDescriptorSetFile   = flag.String(string(protoDescriptorSetFileFlagName), "", "path to the compiled FileDescriptoSet")
-	protoRepositoryHost      = flag.String(string(protoRepositoryHostFlagName), "", "value of the proto_repository.host")
-	protoRepositoryOwner     = flag.String(string(protoRepositoryOwnerFlagName), "", "value of the proto_repository.owner")
-	protoRepositoryRepo      = flag.String(string(protoRepositoryRepoFlagName), "", "value of the proto_repository.repo")
-	protoRepositoryCommit    = flag.String(string(protoRepositoryCommitFlagName), "", "value of the proto_repository.commit")
-	protoRepositoryPrefix    = flag.String(string(protoRepositoryPrefixFlagName), "", "value of the proto_repository.prefix")
-	protoOutputFile          = flag.String(string(protoOutputFileFlagName), "", "path of file to write the generated proto file")
-	jsonOutputFile           = flag.String(string(jsonOutputFileFlagName), "", "path of file to write the generated json file")
+	protoCompilerName                    = flag.String(string(protoCompilerNameFlagName), "", "proto compiler name")
+	protoCompilerVersionFile             = flag.String(string(protoCompilerVersionFileFlagName), "", "path to the proto_compiler version file")
+	protoDescriptorSetFile               = flag.String(string(protoDescriptorSetFileFlagName), "", "path to the compiled FileDescriptoSet")
+	protoPackageSetDirectDependencyFiles = flag.String(string(protoPackageDirectDependenciesFileFlagName), "", "comma-separated path list to a proto packages that represents the direct package dependencies of this one")
+	protoRepositoryHost                  = flag.String(string(protoRepositoryHostFlagName), "", "value of the proto_repository.host")
+	protoRepositoryOwner                 = flag.String(string(protoRepositoryOwnerFlagName), "", "value of the proto_repository.owner")
+	protoRepositoryRepo                  = flag.String(string(protoRepositoryRepoFlagName), "", "value of the proto_repository.repo")
+	protoRepositoryCommit                = flag.String(string(protoRepositoryCommitFlagName), "", "value of the proto_repository.commit")
+	protoRepositoryPrefix                = flag.String(string(protoRepositoryPrefixFlagName), "", "value of the proto_repository.prefix")
+	protoOutputFile                      = flag.String(string(protoOutputFileFlagName), "", "path of file to write the generated proto file")
+	jsonOutputFile                       = flag.String(string(jsonOutputFileFlagName), "", "path of file to write the generated json file")
+)
+
+var (
+	assetDeps = make(map[string]*pppb.ProtoAsset)
 )
 
 func main() {
@@ -51,6 +57,12 @@ func main() {
 
 func run() error {
 	flag.Parse()
+
+	deps, err := readProtoPackageSetDirectDependencies(protoPackageDirectDependenciesFileFlagName, *protoPackageSetDirectDependencyFiles)
+	if err != nil {
+		return err
+	}
+	collectAssetDeps(deps)
 
 	protoDescriptorSet, protoDescriptorSetData, err := readProtoDescriptorSetFile(protoDescriptorSetFileFlagName, *protoDescriptorSetFile)
 	if err != nil {
@@ -127,6 +139,36 @@ func makeProtoCompiler(version string) (*pppb.ProtoCompiler, error) {
 	}, nil
 }
 
+func readProtoPackageSetDirectDependencies(flag flagName, commaSeparatedfilenames string) (*pppb.ProtoPackageSet, error) {
+	var ps pppb.ProtoPackageSet
+	if commaSeparatedfilenames != "" {
+		filenames := strings.Split(commaSeparatedfilenames, ",")
+		for _, filename := range filenames {
+			pkg, err := readProtoPackageFile(flag, filename)
+			if err != nil {
+				return nil, fmt.Errorf("reading %s: %w", filename, err)
+			}
+			ps.Packages = append(ps.Packages, pkg)
+		}
+	}
+	return &ps, nil
+}
+
+func readProtoPackageFile(flag flagName, filename string) (*pppb.ProtoPackage, error) {
+	if filename == "" {
+		return nil, errorFlagRequired(flag)
+	}
+	var pp pppb.ProtoPackage
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("reading %s: %w", flag, err)
+	}
+	if err := proto.Unmarshal(data, &pp); err != nil {
+		return nil, fmt.Errorf("unmarshaling %s: %w", flag, err)
+	}
+	return &pp, nil
+}
+
 func readProtoDescriptorSetFile(flag flagName, filename string) (*descriptorpb.FileDescriptorSet, []byte, error) {
 	if filename == "" {
 		return nil, nil, errorFlagRequired(flag)
@@ -134,10 +176,10 @@ func readProtoDescriptorSetFile(flag flagName, filename string) (*descriptorpb.F
 	var ds descriptorpb.FileDescriptorSet
 	data, err := os.ReadFile(filename)
 	if err != nil {
-		return nil, nil, fmt.Errorf("reading proto_descriptor_set_file: %w", err)
+		return nil, nil, fmt.Errorf("reading %s: %w", flag, err)
 	}
 	if err := proto.Unmarshal(data, &ds); err != nil {
-		return nil, nil, fmt.Errorf("unmarshaling proto_descriptor_set_file: %w", err)
+		return nil, nil, fmt.Errorf("unmarshaling %s: %w", flag, err)
 	}
 	return &ds, data, nil
 }
@@ -222,13 +264,18 @@ func makeProtoAsset(file *descriptorpb.FileDescriptorProto) (*pppb.ProtoAsset, e
 	}
 	hash, err := protoreflectHash(file)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("calculating fileset hash: %w", err)
+	}
+	deps, err := makeProtoAssetDependencies(file.Dependency)
+	if err != nil {
+		return nil, fmt.Errorf("assembling file deps: %w", err)
 	}
 	return &pppb.ProtoAsset{
-		File:   file,
-		Sha256: sha256Bytes(data),
-		Size:   uint64(len(data)),
-		Hash:   hash,
+		File:         file,
+		Sha256:       sha256Bytes(data),
+		Size:         uint64(len(data)),
+		Hash:         hash,
+		Dependencies: deps,
 	}, nil
 }
 
@@ -248,4 +295,28 @@ func protoreflectHash(msg proto.Message) (string, error) {
 		return "", fmt.Errorf("hashing proto: %w", err)
 	}
 	return fmt.Sprintf("protoreflecthash.v0:%x", data), nil
+}
+
+func makeProtoAssetDependencies(deps []string) ([]string, error) {
+	results := make([]string, len(deps))
+	for i, dep := range deps {
+		asset, ok := assetDeps[dep]
+		if !ok {
+			return nil, fmt.Errorf("asset dependency not found: %s")
+		}
+		results[i] = assetKey(*asset.File.Name, asset.Hash)
+	}
+	return results, nil
+}
+
+func collectAssetDeps(pps *pppb.ProtoPackageSet) {
+	for _, pkg := range pps.Packages {
+		for _, asset := range pkg.Assets {
+			assetDeps[*asset.File.Name] = asset
+		}
+	}
+}
+
+func assetKey(name, hash string) string {
+	return fmt.Sprintf("%s@%s", name, hash)
 }
