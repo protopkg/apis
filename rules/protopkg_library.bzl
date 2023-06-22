@@ -9,6 +9,8 @@ def _protopkg_library_impl(ctx):
     proto_descriptor_set_file = proto_info.direct_descriptor_set
     proto_compiler_version_file = proto_compiler_info.version_file
 
+    protopkg_direct_deps_files = depset([info.proto_package_file for info in protopkg_direct_deps])
+
     args = ctx.actions.args()
     args.add("-proto_descriptor_set_file", proto_descriptor_set_file.path)
     args.add("-proto_repository_host", proto_repository_info.source_host)
@@ -21,14 +23,16 @@ def _protopkg_library_impl(ctx):
     args.add("-proto_compiler_version_file", proto_compiler_version_file.path)
     args.add_joined(
         "-proto_package_direct_dependency_files",
-        [dep.proto_package_file.path for dep in protopkg_direct_deps],
+        [f.path for f in protopkg_direct_deps_files.to_list()],
         join_with = ",",
     )
+
+    print("args:", args)
 
     inputs = [
         proto_descriptor_set_file,
         proto_compiler_version_file,
-    ] + [dep.proto_package_file for dep in protopkg_direct_deps]
+    ] + protopkg_direct_deps_files.to_list()
 
     ctx.actions.run(
         executable = ctx.executable._tool,

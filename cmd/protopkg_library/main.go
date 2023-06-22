@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	pppb "github.com/stackb/apis/build/stack/protobuf/package/v1alpha1"
@@ -46,7 +47,8 @@ var (
 )
 
 var (
-	assetDeps = make(map[string]*pppb.ProtoAsset)
+	assetDeps   = make(map[string]*pppb.ProtoAsset)
+	packageDeps = make(map[string]*pppb.ProtoPackage)
 )
 
 func main() {
@@ -63,6 +65,7 @@ func run() error {
 		return err
 	}
 	collectAssetDeps(deps)
+	collectPackageDeps(deps)
 
 	protoDescriptorSet, protoDescriptorSetData, err := readProtoDescriptorSetFile(protoDescriptorSetFileFlagName, *protoDescriptorSetFile)
 	if err != nil {
@@ -243,20 +246,16 @@ func makeProtoPackage(data []byte,
 	}
 
 	pkg := &pppb.ProtoPackage{
-		Location: location,
-		Compiler: compiler,
-		Assets:   assets,
-		Hash:     hash,
-	}
-
-	prefix := pkg.Location.Prefix
-	if prefix == "" {
-		prefix = "~"
+		Location:     location,
+		Compiler:     compiler,
+		Assets:       assets,
+		Hash:         hash,
+		Dependencies: makeProtoPackageDependencies(),
 	}
 
 	pkg.Name = fmt.Sprintf("%s/%s/%s",
 		pkg.Location.Repository.Repository,
-		prefix,
+		makePackagePrefix(pkg.Location.Prefix),
 		pkg.Location.Commit,
 	)
 
@@ -310,9 +309,25 @@ func makeProtoAssetDependencies(deps []string) ([]string, error) {
 		if !ok {
 			return nil, fmt.Errorf("asset dependency not found: %s", dep)
 		}
-		results[i] = assetKey(*asset.File.Name, asset.Hash)
+		results[i] = assetHashKey(asset)
 	}
 	return results, nil
+}
+
+func makeProtoPackageDependencies() []string {
+	names := make([]string, 0, len(packageDeps))
+	for name := range packageDeps {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+
+	results := make([]string, len(names))
+	for i, name := range names {
+		pkg := packageDeps[name]
+		results[i] = packageHashKey(pkg)
+	}
+
+	return results
 }
 
 func collectAssetDeps(pps *pppb.ProtoPackageSet) {
@@ -323,12 +338,33 @@ func collectAssetDeps(pps *pppb.ProtoPackageSet) {
 	}
 }
 
-func assetKey(name, hash string) string {
-	return fmt.Sprintf("%s@%s", name, hash)
+func collectPackageDeps(pps *pppb.ProtoPackageSet) {
+	for _, pkg := range pps.Packages {
+		packageDeps[packageHashKey(pkg)] = pkg
+	}
+}
+
+func assetHashKey(asset *pppb.ProtoAsset) string {
+	return fmt.Sprintf("%s@%s", *asset.File.Name, asset.Hash)
+}
+
+func packageHashKey(pkg *pppb.ProtoPackage) string {
+	return fmt.Sprintf("%s/%s@%s",
+		pkg.Location.Repository.Repository,
+		makePackagePrefix(pkg.Location.Prefix),
+		pkg.Hash,
+	)
 }
 
 func makeProtoPackageHash(assets []*pppb.ProtoAsset) (string, error) {
 	return protoreflectHash(&pppb.ProtoPackage{
 		Assets: assets,
 	})
+}
+
+func makePackagePrefix(prefix string) string {
+	if prefix == "" {
+		prefix = "~"
+	}
+	return prefix
 }
