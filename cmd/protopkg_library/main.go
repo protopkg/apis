@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	pppb "github.com/stackb/apis/build/stack/protobuf/package/v1alpha1"
+	"github.com/stackb/protoreflecthash"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
@@ -219,10 +220,15 @@ func makeProtoAsset(file *descriptorpb.FileDescriptorProto) (*pppb.ProtoAsset, e
 	if err != nil {
 		return nil, fmt.Errorf("marshaling asset FileDescriptorProto: %w", err)
 	}
+	hash, err := protoHash(file)
+	if err != nil {
+		return nil, err
+	}
 	return &pppb.ProtoAsset{
 		File:   file,
 		Sha256: sha256Bytes(data),
 		Size:   uint64(len(data)),
+		Hash:   fmt.Sprintf("%x", hash),
 	}, nil
 }
 
@@ -233,4 +239,13 @@ func sha256Bytes(data []byte) string {
 
 func errorFlagRequired(name flagName) error {
 	return fmt.Errorf("flag required but not provided: -%s", name)
+}
+
+func protoHash(msg proto.Message) (string, error) {
+	hasher := protoreflecthash.NewHasher()
+	data, err := hasher.HashProto(msg.ProtoReflect())
+	if err != nil {
+		return "", fmt.Errorf("hashing proto: %w", err)
+	}
+	return hex.EncodeToString(data), nil
 }

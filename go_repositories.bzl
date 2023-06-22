@@ -2,6 +2,14 @@ load("@bazel_gazelle//:deps.bzl", "go_repository")
 
 def go_repositories():
     go_repository(
+        name = "com_github_benlaurie_objecthash",
+        build_file_proto_mode = "disable_global",
+        importpath = "github.com/benlaurie/objecthash",
+        sum = "h1:VRtJdDi2lqc3MFwmouppm2jlm6icF+7H3WYKpLENMTo=",
+        version = "v0.0.0-20180202135721-d1e3d6079fc1",
+    )
+
+    go_repository(
         name = "com_github_census_instrumentation_opencensus_proto",
         build_file_proto_mode = "disable_global",
         importpath = "github.com/census-instrumentation/opencensus-proto",
@@ -110,6 +118,13 @@ def go_repositories():
         importpath = "github.com/stackb/apis",
         sum = "h1:/pxAiWlC9FRHqtfch/IyVeuGooFyFXuXzUeP5SXDm1Q=",
         version = "v0.0.0-20230617215317-eb7e88264724",
+    )
+    go_repository(
+        name = "com_github_stackb_protoreflecthash",
+        build_file_proto_mode = "disable_global",
+        importpath = "github.com/stackb/protoreflecthash",
+        sum = "h1:tOLG5lU3URfwF9LbD6p/l8tO+yxNQaVfsBNZ36nmlUk=",
+        version = "v0.0.0-20230622204848-b7269c7fa663",
     )
 
     go_repository(

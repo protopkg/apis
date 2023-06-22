@@ -6,6 +6,7 @@ go_library(
     importpath = "github.com/protopkg/apis/cmd/protopkg_library",
     visibility = ["//visibility:private"],
     deps = [
+        "@com_github_stackb_protoreflecthash//:protoreflecthash",
         "@org_golang_google_protobuf//encoding/protojson",
         "@org_golang_google_protobuf//proto",
         "@org_golang_google_protobuf//types/descriptorpb",

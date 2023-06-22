@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/stackb/apis v0.0.0-20230617215317-eb7e88264724
+	github.com/stackb/protoreflecthash v0.0.0-20230622204848-b7269c7fa663
 	google.golang.org/grpc v1.56.0
 	google.golang.org/protobuf v1.30.0
 )
