@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path"
 	"sort"
 	"strings"
 
@@ -252,17 +253,22 @@ func makeProtoPackage(data []byte,
 		Hash:         hash,
 		Dependencies: makeProtoPackageDependencies(),
 	}
-
-	pkg.Name = fmt.Sprintf("%s/%s/%s",
-		pkg.Location.Repository.Repository,
-		makePackagePrefix(pkg.Location.Prefix),
-		pkg.Location.Commit,
-	)
+	pkg.Name = makeProtoPackageName(pkg)
 
 	return pkg, nil
 }
 
+func makeProtoPackageName(pkg *pppb.ProtoPackage) string {
+	name := path.Join(pkg.Location.Repository.Repository, pkg.Location.Prefix)
+	if len(pkg.Assets) == 1 {
+		name = name + ":" + *pkg.Assets[0].File.Name
+	}
+	return "//" + name + "@" + pkg.Location.Commit
+}
+
 func makeProtoAsset(file *descriptorpb.FileDescriptorProto) (*pppb.ProtoAsset, error) {
+	sortFile(file)
+
 	data, err := proto.Marshal(file)
 	if err != nil {
 		return nil, fmt.Errorf("marshaling asset FileDescriptorProto: %w", err)
@@ -275,6 +281,7 @@ func makeProtoAsset(file *descriptorpb.FileDescriptorProto) (*pppb.ProtoAsset, e
 	if err != nil {
 		return nil, fmt.Errorf("assembling file deps: %w", err)
 	}
+
 	return &pppb.ProtoAsset{
 		File:         file,
 		Sha256:       sha256Bytes(data),
@@ -311,23 +318,255 @@ func makeProtoAssetDependencies(deps []string) ([]string, error) {
 		}
 		results[i] = assetHashKey(asset)
 	}
+	sort.Strings(results)
 	return results, nil
+}
+
+func sortFile(f *descriptorpb.FileDescriptorProto) {
+	sort.Strings(f.Dependency)
+	// TODO: fix the public dependencies here: not used, but still, they shouold
+	// continue to correlate with the f.Dependency above.
+	sort.Slice(f.EnumType, func(i, j int) bool {
+		a := f.EnumType[i]
+		b := f.EnumType[j]
+		return *a.Name < *b.Name
+	})
+	sort.Slice(f.MessageType, func(i, j int) bool {
+		a := f.MessageType[i]
+		b := f.MessageType[j]
+		return *a.Name < *b.Name
+	})
+	sort.Slice(f.Service, func(i, j int) bool {
+		a := f.Service[i]
+		b := f.Service[j]
+		return *a.Name < *b.Name
+	})
+	sort.Slice(f.Extension, func(i, j int) bool {
+		a := f.Extension[i]
+		b := f.Extension[j]
+		return *a.Name < *b.Name
+	})
+
+	for _, e := range f.EnumType {
+		sortEnumType(e)
+	}
+	for _, m := range f.MessageType {
+		sortMessageType(m)
+	}
+	for _, s := range f.Service {
+		sortService(s)
+	}
+	for _, e := range f.Extension {
+		sortExtension(e)
+	}
+
+	if f.SourceCodeInfo != nil {
+		sortSourceCodeInfo(f.SourceCodeInfo)
+	}
+	if f.Options != nil {
+		sortFileOptions(f.Options)
+	}
+}
+
+func sortEnumType(e *descriptorpb.EnumDescriptorProto) {
+	sort.Slice(e.Value, func(i, j int) bool {
+		a := e.Value[i]
+		b := e.Value[j]
+		return *a.Number < *b.Number
+	})
+	if e.Options != nil {
+		sortEnumOptions(e.Options)
+	}
+}
+
+func sortMessageType(m *descriptorpb.DescriptorProto) {
+	sort.Strings(m.ReservedName)
+
+	sort.Slice(m.EnumType, func(i, j int) bool {
+		a := m.EnumType[i]
+		b := m.EnumType[j]
+		return *a.Name < *b.Name
+	})
+	sort.Slice(m.Field, func(i, j int) bool {
+		a := m.Field[i]
+		b := m.Field[j]
+		return *a.Number < *b.Number
+	})
+	sort.Slice(m.NestedType, func(i, j int) bool {
+		a := m.NestedType[i]
+		b := m.NestedType[j]
+		return *a.Name < *b.Name
+	})
+	sort.Slice(m.Extension, func(i, j int) bool {
+		a := m.Extension[i]
+		b := m.Extension[j]
+		return *a.Name < *b.Name
+	})
+	sort.Slice(m.ExtensionRange, func(i, j int) bool {
+		a := m.ExtensionRange[i]
+		b := m.ExtensionRange[j]
+		return *a.Start < *b.Start
+	})
+	sort.Slice(m.ReservedRange, func(i, j int) bool {
+		a := m.ReservedRange[i]
+		b := m.ReservedRange[j]
+		return *a.Start < *b.Start
+	})
+
+	for _, e := range m.EnumType {
+		sortEnumType(e)
+	}
+	for _, f := range m.Field {
+		sortFieldType(f)
+	}
+	for _, m := range m.NestedType {
+		sortMessageType(m)
+	}
+	for _, e := range m.Extension {
+		sortExtension(e)
+	}
+	for _, e := range m.ExtensionRange {
+		sortExtensionRange(e)
+	}
+	for _, e := range m.ReservedRange {
+		sortReservedRange(e)
+	}
+}
+
+func sortFieldType(f *descriptorpb.FieldDescriptorProto) {
+	// TODO: f.Label?
+	// TODO: f.Type?
+	if f.Options != nil {
+		sortFieldOptions(f.Options)
+	}
+}
+
+func sortService(s *descriptorpb.ServiceDescriptorProto) {
+	sort.Slice(s.Method, func(i, j int) bool {
+		a := s.Method[i]
+		b := s.Method[j]
+		return *a.Name < *b.Name
+	})
+	for _, m := range s.Method {
+		sortMethod(m)
+	}
+	if s.Options != nil {
+		sortServiceOptions(s.Options)
+	}
+	// DONE
+}
+
+func sortMethod(s *descriptorpb.MethodDescriptorProto) {
+	if s.Options != nil {
+		sortMethodOptions(s.Options)
+	}
+	// DONE
+}
+
+func sortExtension(e *descriptorpb.FieldDescriptorProto) {
+	sortFieldType(e)
+	// DONE
+}
+
+func sortExtensionRange(e *descriptorpb.DescriptorProto_ExtensionRange) {
+	if e.Options != nil {
+		sortExtensionRangeOptions(e.Options)
+	}
+	// DONE
+}
+
+func sortReservedRange(e *descriptorpb.DescriptorProto_ReservedRange) {
+	// DONE
+}
+
+func sortExtensionRangeOptions(e *descriptorpb.ExtensionRangeOptions) {
+	sort.Slice(e.UninterpretedOption, func(i, j int) bool {
+		a := e.UninterpretedOption[i]
+		b := e.UninterpretedOption[j]
+		return *a.IdentifierValue < *b.IdentifierValue
+	})
+	for _, o := range e.UninterpretedOption {
+		sortUninterpretedOption(o)
+	}
+	// DONE
+}
+
+func sortFileOptions(o *descriptorpb.FileOptions) {
+	sort.Slice(o.UninterpretedOption, func(i, j int) bool {
+		a := o.UninterpretedOption[i]
+		b := o.UninterpretedOption[j]
+		return *a.IdentifierValue < *b.IdentifierValue
+	})
+	for _, o := range o.UninterpretedOption {
+		sortUninterpretedOption(o)
+	}
+	// DONE
+}
+
+func sortEnumOptions(o *descriptorpb.EnumOptions) {
+	sort.Slice(o.UninterpretedOption, func(i, j int) bool {
+		a := o.UninterpretedOption[i]
+		b := o.UninterpretedOption[j]
+		return *a.IdentifierValue < *b.IdentifierValue
+	})
+	for _, o := range o.UninterpretedOption {
+		sortUninterpretedOption(o)
+	}
+	// DONE
+}
+
+func sortFieldOptions(o *descriptorpb.FieldOptions) {
+	// TODO: sort e.Retention?
+	sort.Slice(o.UninterpretedOption, func(i, j int) bool {
+		a := o.UninterpretedOption[i]
+		b := o.UninterpretedOption[j]
+		return *a.IdentifierValue < *b.IdentifierValue
+	})
+	for _, o := range o.UninterpretedOption {
+		sortUninterpretedOption(o)
+	}
+	// DONE
+}
+
+func sortServiceOptions(o *descriptorpb.ServiceOptions) {
+	sort.Slice(o.UninterpretedOption, func(i, j int) bool {
+		a := o.UninterpretedOption[i]
+		b := o.UninterpretedOption[j]
+		return *a.IdentifierValue < *b.IdentifierValue
+	})
+	for _, o := range o.UninterpretedOption {
+		sortUninterpretedOption(o)
+	}
+	// DONE
+}
+
+func sortMethodOptions(o *descriptorpb.MethodOptions) {
+	sort.Slice(o.UninterpretedOption, func(i, j int) bool {
+		a := o.UninterpretedOption[i]
+		b := o.UninterpretedOption[j]
+		return *a.IdentifierValue < *b.IdentifierValue
+	})
+	for _, o := range o.UninterpretedOption {
+		sortUninterpretedOption(o)
+	}
+	// DONE
+}
+
+func sortUninterpretedOption(o *descriptorpb.UninterpretedOption) {
+	// TODO: sort name parts?  Probably not.
+}
+
+func sortSourceCodeInfo(s *descriptorpb.SourceCodeInfo) {
+	// TODO: sort this, or assume sorted?
 }
 
 func makeProtoPackageDependencies() []string {
 	names := make([]string, 0, len(packageDeps))
-	for name := range packageDeps {
-		names = append(names, name)
+	for _, pkg := range packageDeps {
+		names = append(names, pkg.Name)
 	}
 	sort.Strings(names)
-
-	results := make([]string, len(names))
-	for i, name := range names {
-		pkg := packageDeps[name]
-		results[i] = packageHashKey(pkg)
-	}
-
-	return results
+	return names
 }
 
 func collectAssetDeps(pps *pppb.ProtoPackageSet) {
