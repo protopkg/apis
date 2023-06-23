@@ -65,7 +65,6 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	collectAssetDeps(deps)
 	collectPackageDeps(deps)
 
 	protoDescriptorSet, protoDescriptorSetData, err := readProtoDescriptorSetFile(protoDescriptorSetFileFlagName, *protoDescriptorSetFile)
@@ -98,7 +97,6 @@ func run() error {
 			return err
 		}
 	}
-
 	if *jsonOutputFile != "" {
 		if err := writeJsonOutputFile(pkg, *jsonOutputFile); err != nil {
 			return err
@@ -137,6 +135,7 @@ func makeProtoCompiler(version string) (*pppb.ProtoCompiler, error) {
 	if *protoCompilerName == "" {
 		return nil, errorFlagRequired(protoCompilerNameFlagName)
 	}
+
 	return &pppb.ProtoCompiler{
 		Name:    *protoCompilerName,
 		Version: version,
@@ -162,6 +161,7 @@ func readProtoPackageFile(flag flagName, filename string) (*pppb.ProtoPackage, e
 	if filename == "" {
 		return nil, errorFlagRequired(flag)
 	}
+
 	var pp pppb.ProtoPackage
 	data, err := os.ReadFile(filename)
 	if err != nil {
@@ -177,6 +177,7 @@ func readProtoDescriptorSetFile(flag flagName, filename string) (*descriptorpb.F
 	if filename == "" {
 		return nil, nil, errorFlagRequired(flag)
 	}
+
 	var ds descriptorpb.FileDescriptorSet
 	data, err := os.ReadFile(filename)
 	if err != nil {
@@ -569,22 +570,13 @@ func makeProtoPackageDependencies() []string {
 	return names
 }
 
-func collectAssetDeps(pps *pppb.ProtoPackageSet) {
+func collectPackageDeps(pps *pppb.ProtoPackageSet) {
 	for _, pkg := range pps.Packages {
+		packageDeps[packageHashKey(pkg)] = pkg
 		for _, asset := range pkg.Assets {
 			assetDeps[*asset.File.Name] = asset
 		}
 	}
-}
-
-func collectPackageDeps(pps *pppb.ProtoPackageSet) {
-	for _, pkg := range pps.Packages {
-		packageDeps[packageHashKey(pkg)] = pkg
-	}
-}
-
-func assetHashKey(asset *pppb.ProtoAsset) string {
-	return fmt.Sprintf("%s@%s", *asset.File.Name, asset.Hash)
 }
 
 func packageHashKey(pkg *pppb.ProtoPackage) string {
@@ -593,6 +585,10 @@ func packageHashKey(pkg *pppb.ProtoPackage) string {
 		makePackagePrefix(pkg.Location.Prefix),
 		pkg.Hash,
 	)
+}
+
+func assetHashKey(asset *pppb.ProtoAsset) string {
+	return fmt.Sprintf("%s@%s", *asset.File.Name, asset.Hash)
 }
 
 func makeProtoPackageHash(assets []*pppb.ProtoAsset) (string, error) {
