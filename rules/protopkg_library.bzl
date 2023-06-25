@@ -27,7 +27,7 @@ def _protopkg_library_impl(ctx):
         join_with = ",",
     )
 
-    print("args:", args)
+    # print(" args:", args)
 
     inputs = [
         proto_descriptor_set_file,
@@ -142,7 +142,7 @@ _protopkg_create = rule(
             providers = [ProtoPackageInfo],
         ),
         "address": attr.string(
-            default = "localhost:4500",
+            default = "localhost:1080",
         ),
         "_protopkg_create": attr.label(
             default = str(Label("//cmd/protopkg_create")),

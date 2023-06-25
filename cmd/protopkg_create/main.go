@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/x509"
 	"flag"
 	"fmt"
@@ -87,7 +88,24 @@ func createPackagesClient(address string) (pppb.PackagesClient, *grpc.ClientConn
 }
 
 func sendProtoPackage(pkg *pppb.ProtoPackage, client pppb.PackagesClient) (proto.Message, error) {
-	return nil, fmt.Errorf("not implemented yet")
+	requests := []*pppb.CreateProtoPackageRequest{
+		{Pkg: pkg},
+	}
+	ctx := context.Background()
+	stream, err := client.CreateProtoPackage(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("creating client stream call: %w", err)
+	}
+	for _, createRequest := range requests {
+		if err := stream.Send(createRequest); err != nil {
+			return nil, fmt.Errorf("sending package %s: %w", createRequest.Pkg.Name, err)
+		}
+	}
+	operation, err := stream.CloseAndRecv()
+	if err != nil {
+		return nil, fmt.Errorf("close-recv stream call: %w", err)
+	}
+	return operation, nil
 }
 
 func readProtoPackageFile(flag flagName, filename string) (*pppb.ProtoPackage, error) {

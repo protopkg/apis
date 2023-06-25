@@ -27,3 +27,33 @@ protoc.Rule(
     kind_info = lambda: gazelle.KindInfo(resolve_attrs = {"deps": True}),
     provide_rule = _provide_protopkg_library,
 )
+
+def _configure_protopkg_library(ctx):
+    """_configure_protopkg_library prepares the PluginConfiguration for a fictitious protoc plugin.
+
+    The purpose for this plugin definition is to ensure at least one output file is "predicted"
+    foreach proto_library rule.  This produces a 1:1 correlation for protopkg_library deps.
+
+    Args:
+        ctx (protoc.PluginContext): The context object.
+    Returns:
+        config (PluginConfiguration): The configured PluginConfiguration object.
+    """
+
+    pb = ctx.proto_library.base_name + ".protopkg.pb"
+    if ctx.rel:
+        pb = "/".join([ctx.rel, pb])
+
+    config = protoc.PluginConfiguration(
+        label = "@//plugin:protoc-gen-protopkg",
+        outputs = [pb],
+        out = pb,
+        options = ctx.plugin_config.options,
+    )
+
+    return config
+
+protoc.Plugin(
+    name = "protopkg_library_plugin",
+    configure = _configure_protopkg_library,
+)

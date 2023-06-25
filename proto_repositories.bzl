@@ -77,24 +77,24 @@ def proto_repositories():
             "gazelle:exclude google/ads/googleads/v14/services",
             "gazelle:proto_language go enable true",
             "gazelle:proto_language protopkg enable true",
+            "gazelle:proto_rule proto_compile attr args --experimental_allow_proto3_optional",
         ],
     )
 
-    # Branch: master
-    # Commit: 523727eebe7ebec685b43bb08342f9cdbcc43a0e
-    # Date: 2023-06-22 22:59:16 +0000 UTC
-    # URL: https://github.com/stackb/apis/commit/523727eebe7ebec685b43bb08342f9cdbcc43a0e
+    # Commit: 4d2fa7938d48d7049ae0cafb23b8067e11b389b7
+    # Date: 2023-06-25 15:58:23 +0000 UTC
+    # URL: https://github.com/stackb/apis/commit/4d2fa7938d48d7049ae0cafb23b8067e11b389b7
     #
-    # Merge pull request #13 from stackb/protopkg-deps
+    # Merge pull request #14 from stackb/createprotopackage
     #
-    # Add ProtoPackage.dependencies
-    # Size: 37422 (37 kB)
+    # Modify signature of CreateProtoPackageRequest
+    # Size: 37235 (37 kB)
     github_proto_repository(
         name = "stackbuildapis",
         owner = "stackb",
         repo = "apis",
-        commit = "523727eebe7ebec685b43bb08342f9cdbcc43a0e",
-        sha256 = "478b392bf0f4999105ac0a20ef43e1ea6409382ff09d316f888e6d27973f82d1",
+        commit = "4d2fa7938d48d7049ae0cafb23b8067e11b389b7",
+        sha256 = "638ff833eaa1f1cb6f425eebc4ed37ebd650320a574c0e4a19b1a9b868c74ed6",
         cfgs = ["//:rules_proto_config.yaml"],
         reresolve_known_proto_imports = True,
         imports = [

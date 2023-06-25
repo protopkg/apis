@@ -1,3 +1,5 @@
+starlarkPlugins:
+  - "gazelle/language/protopkg/protopkg_library.star%protopkg_library_plugin"
 starlarkRules:
   - "gazelle/language/protopkg/protopkg_library.star%protopkg_library"
 plugins:
@@ -17,6 +19,8 @@ plugins:
       - "@org_golang_google_grpc//:go_default_library"
       - "@org_golang_google_grpc//codes"
       - "@org_golang_google_grpc//status"
+  - name: protopkg_library_plugin
+    implementation: gazelle/language/protopkg/protopkg_library.star%protopkg_library_plugin
 rules:
   - name: proto_compile
     implementation: stackb:rules_proto:proto_compile
@@ -50,7 +54,7 @@ languages:
     enabled: false
   - name: protopkg
     plugins:
-      - protoc-gen-go
+      - protopkg_library_plugin
     rules:
       - protopkg_library
     enabled: false

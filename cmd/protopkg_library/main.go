@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"sort"
@@ -315,7 +316,14 @@ func makeProtoAssetDependencies(deps []string) ([]string, error) {
 	for i, dep := range deps {
 		asset, ok := assetDeps[dep]
 		if !ok {
-			return nil, fmt.Errorf("asset dependency not found: %s", dep)
+			names := make([]string, 0, len(assetDeps))
+			for name := range assetDeps {
+				names = append(names, name)
+			}
+			log.Printf("asset dependency not found for: %s (must be one of %v)", dep, names)
+			results[i] = "DEP NOT FOUND: " + dep
+			continue
+			// return nil, fmt.Errorf("asset dependency not found for: %s", dep)
 		}
 		results[i] = assetHashKey(asset)
 	}
