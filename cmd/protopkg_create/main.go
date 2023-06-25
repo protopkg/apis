@@ -5,11 +5,14 @@ import (
 	"crypto/x509"
 	"flag"
 	"fmt"
+	"log"
 	"os"
+	"strings"
 
 	pppb "github.com/stackb/apis/build/stack/protobuf/package/v1alpha1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
@@ -55,12 +58,12 @@ func run() error {
 		return err
 	}
 
-	if protoOutputFile != nil {
+	if *protoOutputFile != "" {
 		if err := writeProtoOutputFile(response, *protoOutputFile); err != nil {
 			return err
 		}
 	}
-	if jsonOutputFile != nil {
+	if *jsonOutputFile != "" {
 		if err := writeJsonOutputFile(response, *jsonOutputFile); err != nil {
 			return err
 		}
@@ -70,13 +73,16 @@ func run() error {
 }
 
 func createPackagesClient(address string) (pppb.PackagesClient, *grpc.ClientConn, error) {
-	pool, err := x509.SystemCertPool()
-	if err != nil {
-		return nil, nil, fmt.Errorf("getting system x509 cert pool: %w", err)
+	var creds credentials.TransportCredentials
+	if strings.HasSuffix(address, ":443") {
+		pool, err := x509.SystemCertPool()
+		if err != nil {
+			return nil, nil, fmt.Errorf("getting system x509 cert pool: %w", err)
+		}
+		creds = credentials.NewClientTLSFromCert(pool, "")
+	} else {
+		creds = insecure.NewCredentials()
 	}
-
-	// var options []grpc.ClientConn
-	creds := credentials.NewClientTLSFromCert(pool, "")
 	conn, err := grpc.Dial(address,
 		grpc.WithTransportCredentials(creds),
 	)
@@ -131,6 +137,7 @@ func writeProtoOutputFile(msg proto.Message, filename string) error {
 	if err := os.WriteFile(filename, data, os.ModePerm); err != nil {
 		return fmt.Errorf("writing proto file: %w", err)
 	}
+	log.Println("wrote:", filename)
 	return nil
 }
 
@@ -146,5 +153,6 @@ func writeJsonOutputFile(msg proto.Message, filename string) error {
 	if err := os.WriteFile(filename, []byte(jsonstr), os.ModePerm); err != nil {
 		return fmt.Errorf("writing json file: %w", err)
 	}
+	log.Println("wrote:", filename)
 	return nil
 }
