@@ -33,6 +33,7 @@ proto_gazelle(
     args = [
         "-proto_repository_imports_file=$(location @protoapis//:imports.csv)",
         "-proto_repository_imports_file=$(location @googleapis//:imports.csv)",
+        "-proto_repository_imports_file=$(location @stackbuildapis//:imports.csv)",
     ],
     cfgs = ["//:rules_proto_config.yaml"],
     data = [

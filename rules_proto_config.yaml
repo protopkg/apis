@@ -1,7 +1,8 @@
 starlarkPlugins:
-  - "gazelle/language/protopkg/protopkg_library.star%protopkg_library_plugin"
+
+  - "gazelle/language/protopkg/protopkg_file.star%protopkg_file_plugin"
 starlarkRules:
-  - "gazelle/language/protopkg/protopkg_library.star%protopkg_library"
+  - "gazelle/language/protopkg/protopkg_file.star%protopkg_file"
 plugins:
   - name: cpp
     implementation: builtin:cpp
@@ -19,15 +20,15 @@ plugins:
       - "@org_golang_google_grpc//:go_default_library"
       - "@org_golang_google_grpc//codes"
       - "@org_golang_google_grpc//status"
-  - name: protopkg_library_plugin
-    implementation: gazelle/language/protopkg/protopkg_library.star%protopkg_library_plugin
+  - name: protopkg_file_plugin
+    implementation: gazelle/language/protopkg/protopkg_file.star%protopkg_file_plugin
 rules:
   - name: proto_compile
     implementation: stackb:rules_proto:proto_compile
     visibility:
       - //visibility:public
-  - name: protopkg_library
-    implementation: gazelle/language/protopkg/protopkg_library.star%protopkg_library
+  - name: protopkg_file
+    implementation: gazelle/language/protopkg/protopkg_file.star%protopkg_file
     visibility:
       - //visibility:public
   - name: proto_descriptor_set
@@ -54,7 +55,7 @@ languages:
     enabled: false
   - name: protopkg
     plugins:
-      - protopkg_library_plugin
+      - protopkg_file_plugin
     rules:
-      - protopkg_library
+      - protopkg_file
     enabled: false

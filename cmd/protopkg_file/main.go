@@ -21,24 +21,24 @@ import (
 type flagName string
 
 const (
-	protoCompilerNameFlagName                  flagName = "proto_compiler_name"
-	protoCompilerVersionFileFlagName           flagName = "proto_compiler_version_file"
-	protoDescriptorSetFileFlagName             flagName = "proto_descriptor_set_file"
-	protoRepositoryHostFlagName                flagName = "proto_repository_host"
-	protoRepositoryOwnerFlagName               flagName = "proto_repository_owner"
-	protoRepositoryRepoFlagName                flagName = "proto_repository_repo"
-	protoRepositoryCommitFlagName              flagName = "proto_repository_commit"
-	protoRepositoryRootFlagName                flagName = "proto_repository_root"
-	protoPackageDirectDependenciesFileFlagName flagName = "proto_package_direct_dependency_files"
-	protoOutputFileFlagName                    flagName = "proto_out"
-	jsonOutputFileFlagName                     flagName = "json_out"
+	protoCompilerNameFlagName               flagName = "proto_compiler_name"
+	protoCompilerVersionFileFlagName        flagName = "proto_compiler_version_file"
+	protoDescriptorSetFileFlagName          flagName = "proto_descriptor_set_file"
+	protoRepositoryHostFlagName             flagName = "proto_repository_host"
+	protoRepositoryOwnerFlagName            flagName = "proto_repository_owner"
+	protoRepositoryRepoFlagName             flagName = "proto_repository_repo"
+	protoRepositoryCommitFlagName           flagName = "proto_repository_commit"
+	protoRepositoryRootFlagName             flagName = "proto_repository_root"
+	protoFileDirectDependenciesFileFlagName flagName = "proto_file_direct_dependency_files"
+	protoOutputFileFlagName                 flagName = "proto_out"
+	jsonOutputFileFlagName                  flagName = "json_out"
 )
 
 var (
 	protoCompilerName                    = flag.String(string(protoCompilerNameFlagName), "", "proto compiler name")
 	protoCompilerVersionFile             = flag.String(string(protoCompilerVersionFileFlagName), "", "path to the proto_compiler version file")
 	protoDescriptorSetFile               = flag.String(string(protoDescriptorSetFileFlagName), "", "path to the compiled FileDescriptoSet")
-	protoPackageSetDirectDependencyFiles = flag.String(string(protoPackageDirectDependenciesFileFlagName), "", "comma-separated path list to a proto packages that represents the direct package dependencies of this one")
+	protoPackageSetDirectDependencyFiles = flag.String(string(protoFileDirectDependenciesFileFlagName), "", "comma-separated path list to a proto packages that represents the direct package dependencies of this one")
 	protoRepositoryHost                  = flag.String(string(protoRepositoryHostFlagName), "", "value of the proto_repository.host")
 	protoRepositoryOwner                 = flag.String(string(protoRepositoryOwnerFlagName), "", "value of the proto_repository.owner")
 	protoRepositoryRepo                  = flag.String(string(protoRepositoryRepoFlagName), "", "value of the proto_repository.repo")
@@ -62,7 +62,7 @@ func main() {
 func run() error {
 	flag.Parse()
 
-	deps, err := readProtoPackageSetDirectDependencies(protoPackageDirectDependenciesFileFlagName, *protoPackageSetDirectDependencyFiles)
+	deps, err := readProtoPackageSetDirectDependencies(protoFileDirectDependenciesFileFlagName, *protoPackageSetDirectDependencyFiles)
 	if err != nil {
 		return err
 	}

@@ -2,7 +2,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 filegroup(
     name = "starlark",
-    srcs = ["protopkg_library.star"],
+    srcs = ["protopkg_file.star"],
     visibility = ["//visibility:public"],
 )
 

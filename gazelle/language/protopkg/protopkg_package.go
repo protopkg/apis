@@ -47,7 +47,7 @@ func newProtoPkgPackage(cfg *protoPkgPackageConfig) *protoPkgPackage {
 }
 
 func (p *protoPkgPackage) generateRule(resolver *resolver) *rule.Rule {
-	provided := resolver.Provided("protobuf", "protopkg_library")
+	provided := resolver.Provided("protobuf", "protopkg_file")
 	labels := make([]label.Label, 0, len(provided))
 	for k := range provided {
 		if p.cfg.label.Repo != "" {

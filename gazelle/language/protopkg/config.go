@@ -2,7 +2,6 @@ package protopkg
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/config"
@@ -64,7 +63,7 @@ func (c *protoPkgConfig) Clone() *protoPkgConfig {
 // directory name is given by 'rel' and the list of directives in the BUILD file
 // are specified by 'directives'.
 func (c *protoPkgConfig) ParseDirectives(rel string, directives []rule.Directive) (err error) {
-	log.Printf("parsing directives: %s: %+v", rel, directives)
+	// log.Printf("parsing directives: %s: %+v", rel, directives)
 	for _, d := range directives {
 		switch d.Key {
 		case protoPkgPackageDirective:

@@ -20,7 +20,7 @@ import (
 type flagName string
 
 const (
-	protoPackageFileFlagName      flagName = "proto_package_file"
+	protoPackageFileFlagName      flagName = "output_file"
 	packagesServerAddressFlagName flagName = "packages_server_address"
 	protoOutputFileFlagName       flagName = "proto_out"
 	jsonOutputFileFlagName        flagName = "json_out"

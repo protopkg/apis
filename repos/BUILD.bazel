@@ -1,5 +1,74 @@
+load("//rules:protopkg_package.bzl", "protopkg_package")
+
 # gazelle:protopkg_package protobuf repo protoapis
 # gazelle:protopkg_package protobuf package google/protobuf
 
-# gazelle:protopkg_package googleapi repo googleapis
-# gazelle:protopkg_package googleapi package google/api
+# gazelle:protopkg_package stackbuild repo stackbuildapis
+
+# gazelle:protopkg_package googleapis repo googleapis
+# gazelle:protopkg_package googleapis package google/api
+
+protopkg_package(
+    name = "protobuf",
+    deps = [
+        "@protoapis//google/protobuf:any_file",
+        "@protoapis//google/protobuf:api_file",
+        "@protoapis//google/protobuf:descriptor_file",
+        "@protoapis//google/protobuf:duration_file",
+        "@protoapis//google/protobuf:empty_file",
+        "@protoapis//google/protobuf:field_mask_file",
+        "@protoapis//google/protobuf:source_context_file",
+        "@protoapis//google/protobuf:struct_file",
+        "@protoapis//google/protobuf:timestamp_file",
+        "@protoapis//google/protobuf:type_file",
+        "@protoapis//google/protobuf:wrappers_file",
+    ],
+)
+
+protopkg_package(
+    name = "stackbuild",
+    deps = [
+        "@stackbuildapis//build/stack/bzl/v1beta:application_file",
+        "@stackbuildapis//build/stack/protobuf/compiler/v1alpha1:service_file",
+        "@stackbuildapis//build/stack/protobuf/package/v1alpha1:package_file",
+        "@stackbuildapis//build/stack/protobuf/package/v1alpha2:package_file",
+        "@stackbuildapis//build/stack/starlark/info/v1beta1:starlark_info_file",
+    ],
+)
+
+protopkg_package(
+    name = "googleapis",
+    deps = [
+        "@googleapis//google/api:annotations_file",
+        "@googleapis//google/api:auth_file",
+        "@googleapis//google/api:backend_file",
+        "@googleapis//google/api:billing_file",
+        "@googleapis//google/api:client_file",
+        "@googleapis//google/api:config_change_file",
+        "@googleapis//google/api:consumer_file",
+        "@googleapis//google/api:context_file",
+        "@googleapis//google/api:control_file",
+        "@googleapis//google/api:distribution_file",
+        "@googleapis//google/api:documentation_file",
+        "@googleapis//google/api:endpoint_file",
+        "@googleapis//google/api:error_reason_file",
+        "@googleapis//google/api:field_behavior_file",
+        "@googleapis//google/api:http_file",
+        "@googleapis//google/api:httpbody_file",
+        "@googleapis//google/api:label_file",
+        "@googleapis//google/api:launch_stage_file",
+        "@googleapis//google/api:log_file",
+        "@googleapis//google/api:logging_file",
+        "@googleapis//google/api:metric_file",
+        "@googleapis//google/api:monitored_resource_file",
+        "@googleapis//google/api:monitoring_file",
+        "@googleapis//google/api:quota_file",
+        "@googleapis//google/api:resource_file",
+        "@googleapis//google/api:routing_file",
+        "@googleapis//google/api:service_file",
+        "@googleapis//google/api:source_info_file",
+        "@googleapis//google/api:system_parameter_file",
+        "@googleapis//google/api:usage_file",
+        "@googleapis//google/api:visibility_file",
+    ],
+)

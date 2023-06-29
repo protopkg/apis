@@ -1,15 +1,15 @@
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@io_bazel_rules_docker//container:providers.bzl", "LayerInfo")
 load("@io_bazel_rules_docker//container:layer.bzl", "build_layer", "layer")
-load("//rules:providers.bzl", "ProtoPackageInfo")
+load("//rules:providers.bzl", "ProtoFileInfo")
 
 def _protopkg_layer_impl(ctx):
-    pkg_infos = [dep[ProtoPackageInfo] for dep in ctx.attr.deps]
+    pkg_infos = [dep[ProtoFileInfo] for dep in ctx.attr.deps]
 
     layers = []
     for pkg_info in pkg_infos:
         files = []
-        files.append(pkg_info.proto_package_file)
+        files.append(pkg_info.output_file)
         files.append(pkg_info.proto_info.direct_descriptor_set)
         files.extend(pkg_info.proto_info.direct_sources)
         files.extend(pkg_info.proto_info.direct_sources)
@@ -40,9 +40,9 @@ protopkg_layer = rule(
     implementation = _protopkg_layer_impl,
     attrs = dicts.add({
         "deps": attr.label_list(
-            doc = "protopkg_library dependencies",
+            doc = "protopkg_file dependencies",
             mandatory = True,
-            providers = [ProtoPackageInfo],
+            providers = [ProtoFileInfo],
         ),
     }, layer.attrs),
     toolchains = layer.toolchains,
