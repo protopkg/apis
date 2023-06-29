@@ -2,6 +2,7 @@ starlarkPlugins:
   - "gazelle/language/protopkg/protopkg_library.star%protopkg_library_plugin"
 starlarkRules:
   - "gazelle/language/protopkg/protopkg_library.star%protopkg_library"
+  - "gazelle/language/protopkg/protopkg_package.star%protopkg_package"
 plugins:
   - name: cpp
     implementation: builtin:cpp
@@ -28,6 +29,10 @@ rules:
       - //visibility:public
   - name: protopkg_library
     implementation: gazelle/language/protopkg/protopkg_library.star%protopkg_library
+    visibility:
+      - //visibility:public
+  - name: protopkg_package
+    implementation: gazelle/language/protopkg/protopkg_package.star%protopkg_package
     visibility:
       - //visibility:public
   - name: proto_descriptor_set
@@ -57,4 +62,5 @@ languages:
       - protopkg_library_plugin
     rules:
       - protopkg_library
+      - protopkg_package
     enabled: false

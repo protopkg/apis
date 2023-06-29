@@ -17,8 +17,7 @@ def _protopkg_library_impl(ctx):
     args.add("-proto_repository_owner", proto_repository_info.source_owner)
     args.add("-proto_repository_repo", proto_repository_info.source_repo)
     args.add("-proto_repository_commit", proto_repository_info.source_commit)
-    args.add("-proto_repository_prefix", proto_repository_info.source_prefix)
-    args.add("-proto_repository_commit", proto_repository_info.source_commit)
+    args.add("-proto_repository_root", proto_repository_info.source_prefix)
     args.add("-proto_compiler_name", proto_compiler_info.name)
     args.add("-proto_compiler_version_file", proto_compiler_version_file.path)
     args.add_joined(

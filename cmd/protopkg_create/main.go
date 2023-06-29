@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	pppb "github.com/stackb/apis/build/stack/protobuf/package/v1alpha1"
+	pppb "github.com/stackb/apis/build/stack/protobuf/package/v1alpha2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"

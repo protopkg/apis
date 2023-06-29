@@ -11,7 +11,7 @@ import (
 	"sort"
 	"strings"
 
-	pppb "github.com/stackb/apis/build/stack/protobuf/package/v1alpha1"
+	pppb "github.com/stackb/apis/build/stack/protobuf/package/v1alpha2"
 	"github.com/stackb/protoreflecthash"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -28,7 +28,7 @@ const (
 	protoRepositoryOwnerFlagName               flagName = "proto_repository_owner"
 	protoRepositoryRepoFlagName                flagName = "proto_repository_repo"
 	protoRepositoryCommitFlagName              flagName = "proto_repository_commit"
-	protoRepositoryPrefixFlagName              flagName = "proto_repository_prefix"
+	protoRepositoryRootFlagName                flagName = "proto_repository_root"
 	protoPackageDirectDependenciesFileFlagName flagName = "proto_package_direct_dependency_files"
 	protoOutputFileFlagName                    flagName = "proto_out"
 	jsonOutputFileFlagName                     flagName = "json_out"
@@ -43,13 +43,13 @@ var (
 	protoRepositoryOwner                 = flag.String(string(protoRepositoryOwnerFlagName), "", "value of the proto_repository.owner")
 	protoRepositoryRepo                  = flag.String(string(protoRepositoryRepoFlagName), "", "value of the proto_repository.repo")
 	protoRepositoryCommit                = flag.String(string(protoRepositoryCommitFlagName), "", "value of the proto_repository.commit")
-	protoRepositoryPrefix                = flag.String(string(protoRepositoryPrefixFlagName), "", "value of the proto_repository.prefix")
+	protoRepositoryRoot                  = flag.String(string(protoRepositoryRootFlagName), "", "value of the proto_repository.root")
 	protoOutputFile                      = flag.String(string(protoOutputFileFlagName), "", "path of file to write the generated proto file")
 	jsonOutputFile                       = flag.String(string(jsonOutputFileFlagName), "", "path of file to write the generated json file")
 )
 
 var (
-	assetDeps   = make(map[string]*pppb.ProtoAsset)
+	fileDeps    = make(map[string]*pppb.ProtoFile)
 	packageDeps = make(map[string]*pppb.ProtoPackage)
 )
 
@@ -83,7 +83,7 @@ func run() error {
 		return err
 	}
 
-	location, err := makeProtoSourceLocation()
+	location, err := makeProtoArchive()
 	if err != nil {
 		return err
 	}
@@ -107,7 +107,7 @@ func run() error {
 	return nil
 }
 
-func makeProtoSourceLocation() (*pppb.ProtoSourceLocation, error) {
+func makeProtoArchive() (*pppb.ProtoArchive, error) {
 	if *protoRepositoryHost == "" {
 		return nil, errorFlagRequired(protoRepositoryHostFlagName)
 	}
@@ -120,16 +120,19 @@ func makeProtoSourceLocation() (*pppb.ProtoSourceLocation, error) {
 	if *protoRepositoryCommit == "" {
 		return nil, errorFlagRequired(protoRepositoryCommitFlagName)
 	}
-	return &pppb.ProtoSourceLocation{
+	archive := &pppb.ProtoArchive{
 		Repository: &pppb.ProtoRepository{
-			Host:       *protoRepositoryHost,
-			Owner:      *protoRepositoryOwner,
-			Name:       *protoRepositoryRepo,
-			Repository: fmt.Sprintf("%s/%s/%s", *protoRepositoryHost, *protoRepositoryOwner, *protoRepositoryRepo),
+			Host:     *protoRepositoryHost,
+			Owner:    *protoRepositoryOwner,
+			Name:     *protoRepositoryRepo,
+			FullName: fmt.Sprintf("%s/%s/%s", *protoRepositoryHost, *protoRepositoryOwner, *protoRepositoryRepo),
 		},
-		Commit: *protoRepositoryCommit,
-		Prefix: *protoRepositoryPrefix,
-	}, nil
+		CommitSha1: *protoRepositoryCommit,
+		Root:       *protoRepositoryRoot,
+	}
+	archive.ShortSha1 = archive.CommitSha1[0:7]
+
+	return archive, nil
 }
 
 func makeProtoCompiler(version string) (*pppb.ProtoCompiler, error) {
@@ -230,28 +233,28 @@ func writeJsonOutputFile(msg proto.Message, filename string) error {
 
 func makeProtoPackage(data []byte,
 	ds *descriptorpb.FileDescriptorSet,
-	location *pppb.ProtoSourceLocation,
+	archive *pppb.ProtoArchive,
 	compiler *pppb.ProtoCompiler,
 ) (*pppb.ProtoPackage, error) {
 
-	assets := make([]*pppb.ProtoAsset, len(ds.File))
+	protoFiles := make([]*pppb.ProtoFile, len(ds.File))
 	for i, file := range ds.File {
-		asset, err := makeProtoAsset(file)
+		protoFile, err := makeProtoFile(file)
 		if err != nil {
-			return nil, fmt.Errorf("making ProtoAsset %d %s: %w", i, *file.Name, err)
+			return nil, fmt.Errorf("making ProtoFile %d %s: %w", i, *file.Name, err)
 		}
-		assets[i] = asset
+		protoFiles[i] = protoFile
 	}
 
-	hash, err := makeProtoPackageHash(assets)
+	hash, err := makeProtoPackageHash(protoFiles)
 	if err != nil {
 		return nil, fmt.Errorf("calculating proto package hash: %w", err)
 	}
 
 	pkg := &pppb.ProtoPackage{
-		Location:     location,
+		Archive:      archive,
 		Compiler:     compiler,
-		Assets:       assets,
+		Files:        protoFiles,
 		Hash:         hash,
 		Dependencies: makeProtoPackageDependencies(),
 	}
@@ -261,14 +264,16 @@ func makeProtoPackage(data []byte,
 }
 
 func makeProtoPackageName(pkg *pppb.ProtoPackage) string {
-	name := path.Join(pkg.Location.Repository.Repository, pkg.Location.Prefix)
-	if len(pkg.Assets) == 1 {
-		name = name + ":" + *pkg.Assets[0].File.Name
+	name := path.Join(pkg.Archive.Repository.FullName, pkg.Archive.Root)
+	if len(pkg.Files) == 1 {
+		name = name + ":" + *pkg.Files[0].File.Name
+	} else {
+		name = name + ":" + pkg.Hash
 	}
-	return "//" + name + "@" + pkg.Location.Commit
+	return name + "@" + pkg.Archive.CommitSha1
 }
 
-func makeProtoAsset(file *descriptorpb.FileDescriptorProto) (*pppb.ProtoAsset, error) {
+func makeProtoFile(file *descriptorpb.FileDescriptorProto) (*pppb.ProtoFile, error) {
 	sortFile(file)
 
 	data, err := proto.Marshal(file)
@@ -279,15 +284,15 @@ func makeProtoAsset(file *descriptorpb.FileDescriptorProto) (*pppb.ProtoAsset, e
 	if err != nil {
 		return nil, fmt.Errorf("calculating fileset hash: %w", err)
 	}
-	deps, err := makeProtoAssetDependencies(file.Dependency)
+	deps, err := makeProtoFileDependencies(file.Dependency)
 	if err != nil {
 		return nil, fmt.Errorf("assembling file deps: %w", err)
 	}
 
-	return &pppb.ProtoAsset{
+	return &pppb.ProtoFile{
 		File:         file,
-		Sha256:       sha256Bytes(data),
-		Size:         uint64(len(data)),
+		FileSha256:   sha256Bytes(data),
+		FileSize:     int64(len(data)),
 		Hash:         hash,
 		Dependencies: deps,
 	}, nil
@@ -311,21 +316,21 @@ func protoreflectHash(msg proto.Message) (string, error) {
 	return fmt.Sprintf("protoreflecthash.v0:%x", data), nil
 }
 
-func makeProtoAssetDependencies(deps []string) ([]string, error) {
+func makeProtoFileDependencies(deps []string) ([]string, error) {
 	results := make([]string, len(deps))
 	for i, dep := range deps {
-		asset, ok := assetDeps[dep]
+		file, ok := fileDeps[dep]
 		if !ok {
-			names := make([]string, 0, len(assetDeps))
-			for name := range assetDeps {
+			names := make([]string, 0, len(fileDeps))
+			for name := range fileDeps {
 				names = append(names, name)
 			}
-			log.Printf("asset dependency not found for: %s (must be one of %v)", dep, names)
+			log.Printf("file dependency not found for: %s (must be one of %v)", dep, names)
 			results[i] = "DEP NOT FOUND: " + dep
 			continue
-			// return nil, fmt.Errorf("asset dependency not found for: %s", dep)
+			// return nil, fmt.Errorf("file dependency not found for: %s", dep)
 		}
-		results[i] = assetHashKey(asset)
+		results[i] = fileHashKey(file)
 	}
 	sort.Strings(results)
 	return results, nil
@@ -581,27 +586,27 @@ func makeProtoPackageDependencies() []string {
 func collectPackageDeps(pps *pppb.ProtoPackageSet) {
 	for _, pkg := range pps.Packages {
 		packageDeps[packageHashKey(pkg)] = pkg
-		for _, asset := range pkg.Assets {
-			assetDeps[*asset.File.Name] = asset
+		for _, file := range pkg.Files {
+			fileDeps[*file.File.Name] = file
 		}
 	}
 }
 
 func packageHashKey(pkg *pppb.ProtoPackage) string {
 	return fmt.Sprintf("%s/%s@%s",
-		pkg.Location.Repository.Repository,
-		makePackagePrefix(pkg.Location.Prefix),
+		pkg.Archive.Repository.FullName,
+		makePackagePrefix(pkg.Archive.Root),
 		pkg.Hash,
 	)
 }
 
-func assetHashKey(asset *pppb.ProtoAsset) string {
-	return fmt.Sprintf("%s@%s", *asset.File.Name, asset.Hash)
+func fileHashKey(file *pppb.ProtoFile) string {
+	return fmt.Sprintf("%s@%s", *file.File.Name, file.Hash)
 }
 
-func makeProtoPackageHash(assets []*pppb.ProtoAsset) (string, error) {
+func makeProtoPackageHash(files []*pppb.ProtoFile) (string, error) {
 	return protoreflectHash(&pppb.ProtoPackage{
-		Assets: assets,
+		Files: files,
 	})
 }
 

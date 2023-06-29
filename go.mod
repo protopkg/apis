@@ -3,7 +3,7 @@ module github.com/protopkg/apis
 go 1.18
 
 require (
-	github.com/stackb/apis v0.0.0-20230625155823-4d2fa7938d48
+	github.com/stackb/apis v0.0.0-20230629055943-c75e47dce5a2
 	github.com/stackb/protoreflecthash v0.0.0-20230622204848-b7269c7fa663
 	google.golang.org/grpc v1.56.0
 	google.golang.org/protobuf v1.30.0

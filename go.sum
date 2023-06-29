@@ -10,6 +10,10 @@ github.com/stackb/apis v0.0.0-20230622225916-523727eebe7e h1:wWSG8NOktg9NLFWji4+
 github.com/stackb/apis v0.0.0-20230622225916-523727eebe7e/go.mod h1:C0bMEDXz5BCxB0d3hxFAKoRHfxGi67i2AD9rz2WEB+E=
 github.com/stackb/apis v0.0.0-20230625155823-4d2fa7938d48 h1:WAdRZ0nCL/tY03YHjwDKi6t+4H+5Lzop9ie8R9r8/go=
 github.com/stackb/apis v0.0.0-20230625155823-4d2fa7938d48/go.mod h1:C0bMEDXz5BCxB0d3hxFAKoRHfxGi67i2AD9rz2WEB+E=
+github.com/stackb/apis v0.0.0-20230626014555-03f972b39340 h1:8b9M16T0/fEJkpyB9GH6Xzbu0wux8Jr9fxgSlD8vBiA=
+github.com/stackb/apis v0.0.0-20230626014555-03f972b39340/go.mod h1:C0bMEDXz5BCxB0d3hxFAKoRHfxGi67i2AD9rz2WEB+E=
+github.com/stackb/apis v0.0.0-20230629055943-c75e47dce5a2 h1:TdQduRW29A8hHJ1JPBVdVghF6V52o3bMKEKsV1Rk8wA=
+github.com/stackb/apis v0.0.0-20230629055943-c75e47dce5a2/go.mod h1:C0bMEDXz5BCxB0d3hxFAKoRHfxGi67i2AD9rz2WEB+E=
 github.com/stackb/protoreflecthash v0.0.0-20230622204848-b7269c7fa663 h1:tOLG5lU3URfwF9LbD6p/l8tO+yxNQaVfsBNZ36nmlUk=
 github.com/stackb/protoreflecthash v0.0.0-20230622204848-b7269c7fa663/go.mod h1:zecFCufn9E+iqmv6zDhbwTv9pJskfXkZYBqcZIBSPBE=
 golang.org/x/net v0.10.0 h1:X2//UzNDwYmtCLn7To6G58Wr6f5ahEAQgKNzv9Y951M=
