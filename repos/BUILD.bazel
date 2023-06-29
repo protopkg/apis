@@ -1,0 +1,5 @@
+# gazelle:protopkg_package protobuf repo protoapis
+# gazelle:protopkg_package protobuf package google/protobuf
+
+# gazelle:protopkg_package googleapi repo googleapis
+# gazelle:protopkg_package googleapi package google/api

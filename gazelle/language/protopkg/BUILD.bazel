@@ -9,7 +9,9 @@ filegroup(
 go_library(
     name = "protopkg",
     srcs = [
-        "protopkg.go",
+        "config.go",
+        "language.go",
+        "protopkg_package.go",
         "resolver.go",
     ],
     importpath = "github.com/protopkg/apis/gazelle/language/protopkg",

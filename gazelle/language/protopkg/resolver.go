@@ -102,7 +102,6 @@ func (r *resolver) Provide(lang, impLang, imp string, from label.Label) {
 		}
 	}
 	known[imp] = append(known[imp], from)
-	log.Println("provide:", lang, impLang, imp, from)
 }
 
 // Provided implements the ImportProvider interface.
