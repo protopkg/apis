@@ -20,14 +20,14 @@ import (
 type flagName string
 
 const (
-	protoPackageFileFlagName      flagName = "output_file"
+	protoPackageSetFileFlagName   flagName = "output_file"
 	packagesServerAddressFlagName flagName = "packages_server_address"
 	protoOutputFileFlagName       flagName = "proto_out"
 	jsonOutputFileFlagName        flagName = "json_out"
 )
 
 var (
-	protoPackageFile      = flag.String(string(protoPackageFileFlagName), "", "path to the proto package file")
+	protoPackageSetFile   = flag.String(string(protoPackageSetFileFlagName), "", "path to the proto package set file")
 	packagesServerAddress = flag.String(string(packagesServerAddressFlagName), "", "address of the packages server")
 	protoOutputFile       = flag.String(string(protoOutputFileFlagName), "", "path of file to write the generated proto file")
 	jsonOutputFile        = flag.String(string(jsonOutputFileFlagName), "", "path of file to write the generated json file")
@@ -42,7 +42,7 @@ func main() {
 func run() error {
 	flag.Parse()
 
-	pkg, err := readProtoPackageFile(protoPackageFileFlagName, *protoPackageFile)
+	pkg, err := readProtoPackageFileSet(protoPackageSetFileFlagName, *protoPackageSetFile)
 	if err != nil {
 		return err
 	}
@@ -93,18 +93,18 @@ func createPackagesClient(address string) (pppb.PackagesClient, *grpc.ClientConn
 	return pppb.NewPackagesClient(conn), conn, nil
 }
 
-func sendProtoPackage(pkg *pppb.ProtoPackage, client pppb.PackagesClient) (proto.Message, error) {
-	requests := []*pppb.CreateProtoPackageRequest{
-		{Pkg: pkg},
-	}
+func sendProtoPackage(pkgset *pppb.ProtoPackageSet, client pppb.PackagesClient) (proto.Message, error) {
 	ctx := context.Background()
 	stream, err := client.CreateProtoPackage(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("creating client stream call: %w", err)
 	}
-	for _, createRequest := range requests {
-		if err := stream.Send(createRequest); err != nil {
-			return nil, fmt.Errorf("sending package %s: %w", createRequest.Pkg.Name, err)
+	for _, pkg := range pkgset.Packages {
+		req := &pppb.CreateProtoPackageRequest{
+			Pkg: pkg,
+		}
+		if err := stream.Send(req); err != nil {
+			return nil, fmt.Errorf("sending package %s: %w", req.Pkg.Name, err)
 		}
 	}
 	operation, err := stream.CloseAndRecv()
@@ -114,7 +114,7 @@ func sendProtoPackage(pkg *pppb.ProtoPackage, client pppb.PackagesClient) (proto
 	return operation, nil
 }
 
-func readProtoPackageFile(flag flagName, filename string) (*pppb.ProtoPackage, error) {
+func readProtoPackageFileSet(flag flagName, filename string) (*pppb.ProtoPackageSet, error) {
 	if filename == "" {
 		return nil, fmt.Errorf("flag required but not provided: %s", flag)
 	}
@@ -122,7 +122,7 @@ func readProtoPackageFile(flag flagName, filename string) (*pppb.ProtoPackage, e
 	if err != nil {
 		return nil, fmt.Errorf("reading %s: %w", flag, err)
 	}
-	var msg pppb.ProtoPackage
+	var msg pppb.ProtoPackageSet
 	if err := proto.Unmarshal(data, &msg); err != nil {
 		return nil, fmt.Errorf("unmarshaling %s: %w", flag, err)
 	}

@@ -47,18 +47,18 @@ func run() error {
 		fileDeps = append(fileDeps, fileDep)
 	}
 
-	pkg, err := makeProtoPackage(fileDeps)
+	pkgset, err := makeProtoPackageSet(fileDeps)
 	if err != nil {
 		return err
 	}
 
 	if *protoOutputFile != "" {
-		if err := writeProtoOutputFile(pkg, *protoOutputFile); err != nil {
+		if err := writeProtoOutputFile(pkgset, *protoOutputFile); err != nil {
 			return err
 		}
 	}
 	if *jsonOutputFile != "" {
-		if err := writeJsonOutputFile(pkg, *jsonOutputFile); err != nil {
+		if err := writeJsonOutputFile(pkgset, *jsonOutputFile); err != nil {
 			return err
 		}
 	}
@@ -108,33 +108,57 @@ func writeJsonOutputFile(msg proto.Message, filename string) error {
 	return nil
 }
 
-func makeProtoPackage(deps []*pppb.ProtoPackage) (*pppb.ProtoPackage, error) {
+func makeProtoPackageSet(deps []*pppb.ProtoPackage) (*pppb.ProtoPackageSet, error) {
+	// rep is a representative ProtoPackage.  We assume all deps here have the
+	// same archive and compiler.  (TODO: assert this).
+	rep := deps[0]
 
-	protoFiles := make([]*pppb.ProtoFile, 0, len(deps))
+	byPackageName := make(map[string][]*pppb.ProtoFile)
 	for _, pkg := range deps {
-		protoFiles = append(protoFiles, pkg.Files...)
+		for _, file := range pkg.Files {
+			name := *file.File.Package
+			byPackageName[name] = append(byPackageName[name], file)
+		}
 	}
-	sort.Slice(protoFiles, func(i, j int) bool {
-		a := protoFiles[i]
-		b := protoFiles[j]
+	packageNames := make([]string, 0, len(byPackageName))
+	for packageName := range byPackageName {
+		packageNames = append(packageNames, packageName)
+	}
+	sort.Strings(packageNames)
+
+	var pkgset pppb.ProtoPackageSet
+
+	for _, packageName := range packageNames {
+		files := byPackageName[packageName]
+		pkg, err := makeProtoPackage(rep.Archive, rep.Compiler, packageName, files)
+		if err != nil {
+			return nil, err
+		}
+		pkgset.Packages = append(pkgset.Packages, pkg)
+	}
+
+	return &pkgset, nil
+}
+
+func makeProtoPackage(archive *pppb.ProtoArchive, compiler *pppb.ProtoCompiler, name string, files []*pppb.ProtoFile) (*pppb.ProtoPackage, error) {
+	sort.Slice(files, func(i, j int) bool {
+		a := files[i]
+		b := files[j]
 		return *a.File.Name < *b.File.Name
 	})
 
-	hash, err := makeProtoPackageHash(protoFiles)
+	hash, err := makeProtoPackageHash(files)
 	if err != nil {
 		return nil, fmt.Errorf("calculating proto package hash: %w", err)
 	}
 
-	rep := deps[0]
-	pkg := &pppb.ProtoPackage{
-		Archive:  rep.Archive,
-		Compiler: rep.Compiler,
-		Files:    protoFiles,
+	return &pppb.ProtoPackage{
+		Name:     name,
+		Archive:  archive,
+		Compiler: compiler,
+		Files:    files,
 		Hash:     hash,
-	}
-	pkg.Name = *rep.Files[0].File.Package
-
-	return pkg, nil
+	}, nil
 }
 
 func errorFlagRequired(name flagName) error {
