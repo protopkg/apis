@@ -1,12 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"sort"
 
-	gzflag "github.com/bazelbuild/bazel-gazelle/flag"
 	pppb "github.com/stackb/apis/build/stack/protobuf/package/v1alpha2"
 	"github.com/stackb/protoreflecthash"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -15,21 +15,23 @@ import (
 
 type flagName string
 
+type config struct {
+	Deps []string `json:"deps"`
+}
+
 const (
-	depFlagName             flagName = "dep"
+	configFileJsonFlagName  flagName = "config_json_file"
 	protoOutputFileFlagName flagName = "proto_out"
 	jsonOutputFileFlagName  flagName = "json_out"
 )
 
 var (
+	configJsonFile  = flag.String(string(configFileJsonFlagName), "", "path to json config file (containing string array of deps file names)")
 	protoOutputFile = flag.String(string(protoOutputFileFlagName), "", "path of file to write the generated proto file")
 	jsonOutputFile  = flag.String(string(jsonOutputFileFlagName), "", "path of file to write the generated json file")
-	depFiles        []string
 )
 
 func main() {
-	flag.Var(&gzflag.MultiFlag{Values: &depFiles}, string(depFlagName), "path to proto_file dep output file (repeatable)")
-
 	if err := run(); err != nil {
 		fmt.Println(err)
 	}
@@ -38,16 +40,21 @@ func main() {
 func run() error {
 	flag.Parse()
 
-	var fileDeps []*pppb.ProtoPackage
-	for _, filename := range depFiles {
-		fileDep, err := readProtoPackageFile(depFlagName, filename)
+	cfg, err := readConfigJsonFile(configFileJsonFlagName, *configJsonFile)
+	if err != nil {
+		return err
+	}
+
+	var pkgs []*pppb.ProtoPackage
+	for _, filename := range cfg.Deps {
+		fileDep, err := readProtoPackageFile(configFileJsonFlagName, filename)
 		if err != nil {
 			return err
 		}
-		fileDeps = append(fileDeps, fileDep)
+		pkgs = append(pkgs, fileDep)
 	}
 
-	pkgset, err := makeProtoPackageSet(fileDeps)
+	pkgset, err := makeProtoPackageSet(pkgs)
 	if err != nil {
 		return err
 	}
@@ -64,6 +71,18 @@ func run() error {
 	}
 
 	return nil
+}
+
+func readConfigJsonFile(flag flagName, filename string) (*config, error) {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	var cfg config
+	if err := json.Unmarshal(data, &cfg); err != nil {
+		return nil, err
+	}
+	return &cfg, nil
 }
 
 func readProtoPackageFile(flag flagName, filename string) (*pppb.ProtoPackage, error) {

@@ -3,12 +3,19 @@ load("//rules:providers.bzl", "ProtoFileInfo", "ProtoPackageInfo")
 def _protopkg_package_impl(ctx):
     deps = [dep[ProtoFileInfo] for dep in ctx.attr.deps]
     deps_files = depset([info.output_file for info in deps])
+    deps_file_list = deps_files.to_list()
+
+    config_json_file = ctx.actions.declare_file(ctx.label.name + ".cfg.json")
+    config = struct(
+        deps = [f.path for f in deps_file_list],
+    )
+
+    ctx.actions.write(config_json_file, config.to_json())
 
     args = ctx.actions.args()
-    for dep_file in deps_files.to_list():
-        args.add("-dep", dep_file.path)
+    args.add("-config_json_file", config_json_file.path)
 
-    inputs = deps_files.to_list()
+    inputs = [config_json_file] + deps_file_list
 
     ctx.actions.run(
         executable = ctx.executable._tool,
