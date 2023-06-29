@@ -1,5 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
 filegroup(
     name = "starlark",
     srcs = ["protopkg_library.star"],
     visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "protopkg",
+    srcs = [
+        "protopkg.go",
+        "resolver.go",
+    ],
+    importpath = "github.com/protopkg/apis/gazelle/language/protopkg",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@bazel_gazelle//config:go_default_library",
+        "@bazel_gazelle//flag:go_default_library",
+        "@bazel_gazelle//label:go_default_library",
+        "@bazel_gazelle//language:go_default_library",
+        "@bazel_gazelle//repo:go_default_library",
+        "@bazel_gazelle//resolve:go_default_library",
+        "@bazel_gazelle//rule:go_default_library",
+    ],
 )

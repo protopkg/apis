@@ -13,10 +13,16 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/rule"
 )
 
+// NewLanguage is called by Gazelle to install this language extension in a
+// binary.
+func NewLanguage() language.Language {
+	return NewProtoPkgLanguage("protopkg")
+}
+
 // NewProtoPkgLanguage create a new ProtoPkgLanguage Gazelle extension implementation.
-func NewProtoPkgLanguage() *ProtoPkgLanguage {
+func NewProtoPkgLanguage(name string) *ProtoPkgLanguage {
 	return &ProtoPkgLanguage{
-		name:     "protopkg",
+		name:     name,
 		resolver: newResolver(),
 	}
 }
@@ -24,7 +30,7 @@ func NewProtoPkgLanguage() *ProtoPkgLanguage {
 // ProtoPkgLanguage implements language.Language.
 type ProtoPkgLanguage struct {
 	name                       string
-	protoRepositoryImportsFile string
+	protoRepositoryImportsFile []string
 	resolver                   *resolver
 }
 
@@ -50,8 +56,10 @@ func (l *ProtoPkgLanguage) CheckFlags(fs *flag.FlagSet, c *config.Config) error 
 	return nil
 }
 
-func (*ProtoPkgLanguage) loadProtoRepositoryImports(filename string) error {
-
+func (l *ProtoPkgLanguage) loadProtoRepositoryImports(filename string) error {
+	if err := l.resolver.LoadFile(filename); err != nil {
+		return fmt.Errorf("loading proto_repository imports file %q: %w", filename, err)
+	}
 	return nil
 }
 
