@@ -1,13 +1,15 @@
 load("//rules:providers.bzl", "ProtoFileInfo", "ProtoPackageInfo")
 
 def _protopkg_package_impl(ctx):
-    deps = [dep[ProtoFileInfo] for dep in ctx.attr.deps]
-    deps_files = depset([info.output_file for info in deps])
-    deps_file_list = deps_files.to_list()
+    direct_deps = [dep[ProtoFileInfo] for dep in ctx.attr.deps]
+    transitive_deps = depset(transitive = [dep.proto_file_transitive_depset for dep in direct_deps])
+    direct_deps_files = [dep.output_file for dep in direct_deps]
+    transitive_deps_files = [dep.output_file for dep in transitive_deps.to_list()]
 
     config_json_file = ctx.actions.declare_file(ctx.label.name + ".cfg.json")
     config = struct(
-        deps = [f.path for f in deps_file_list],
+        direct_deps = [f.path for f in direct_deps_files],
+        transitive_deps = [f.path for f in transitive_deps_files],
     )
 
     ctx.actions.write(config_json_file, config.to_json())
@@ -15,7 +17,7 @@ def _protopkg_package_impl(ctx):
     args = ctx.actions.args()
     args.add("-config_json_file", config_json_file.path)
 
-    inputs = [config_json_file] + deps_file_list
+    inputs = [config_json_file] + direct_deps_files + transitive_deps_files
 
     ctx.actions.run(
         executable = ctx.executable._tool,
@@ -41,7 +43,8 @@ def _protopkg_package_impl(ctx):
         ProtoPackageInfo(
             label = ctx.label,
             output_file = ctx.outputs.proto,
-            deps = deps,
+            direct_deps = direct_deps,
+            transitive_deps = transitive_deps,
         ),
     ]
 

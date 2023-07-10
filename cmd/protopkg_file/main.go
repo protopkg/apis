@@ -24,6 +24,7 @@ const (
 	protoCompilerNameFlagName               flagName = "proto_compiler_name"
 	protoCompilerVersionFileFlagName        flagName = "proto_compiler_version_file"
 	protoDescriptorSetFileFlagName          flagName = "proto_descriptor_set_file"
+	protoSourceFilesFlagName                flagName = "proto_source_files"
 	protoRepositoryHostFlagName             flagName = "proto_repository_host"
 	protoRepositoryOwnerFlagName            flagName = "proto_repository_owner"
 	protoRepositoryRepoFlagName             flagName = "proto_repository_repo"
@@ -37,6 +38,7 @@ const (
 var (
 	protoCompilerName                    = flag.String(string(protoCompilerNameFlagName), "", "proto compiler name")
 	protoCompilerVersionFile             = flag.String(string(protoCompilerVersionFileFlagName), "", "path to the proto_compiler version file")
+	protoSourceFiles                     = flag.String(string(protoSourceFilesFlagName), "", "comma-separated path list path to the proto source files")
 	protoDescriptorSetFile               = flag.String(string(protoDescriptorSetFileFlagName), "", "path to the compiled FileDescriptoSet")
 	protoPackageSetDirectDependencyFiles = flag.String(string(protoFileDirectDependenciesFileFlagName), "", "comma-separated path list to a proto packages that represents the direct package dependencies of this one")
 	protoRepositoryHost                  = flag.String(string(protoRepositoryHostFlagName), "", "value of the proto_repository.host")
@@ -88,7 +90,12 @@ func run() error {
 		return err
 	}
 
-	pkg, err := makeProtoPackage(protoDescriptorSetData, protoDescriptorSet, location, compiler)
+	sourceMap, err := readProtoSourceFiles(protoSourceFilesFlagName, *protoSourceFiles)
+	if err != nil {
+		return err
+	}
+
+	pkg, err := makeProtoPackage(protoDescriptorSetData, protoDescriptorSet, location, compiler, sourceMap)
 	if err != nil {
 		return err
 	}
@@ -193,6 +200,34 @@ func readProtoDescriptorSetFile(flag flagName, filename string) (*descriptorpb.F
 	return &ds, data, nil
 }
 
+func readProtoSourceFiles(flag flagName, commaSeparatedfilenames string) (map[string][]byte, error) {
+	sourceMap := make(map[string][]byte)
+
+	if commaSeparatedfilenames != "" {
+		filenames := strings.Split(commaSeparatedfilenames, ",")
+		for _, filename := range filenames {
+			data, err := readProtoSourceFile(flag, filename)
+			if err != nil {
+				return nil, fmt.Errorf("reading %s: %w", filename, err)
+			}
+			sourceMap[filename] = data
+		}
+	}
+
+	return sourceMap, nil
+}
+
+func readProtoSourceFile(flag flagName, filename string) ([]byte, error) {
+	if filename == "" {
+		return nil, errorFlagRequired(flag)
+	}
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("reading %s: %w", flag, err)
+	}
+	return data, nil
+}
+
 func readProtoCompilerVersionFile(flag flagName, filename string) (string, error) {
 	if filename == "" {
 		return "", errorFlagRequired(flag)
@@ -235,6 +270,7 @@ func makeProtoPackage(data []byte,
 	ds *descriptorpb.FileDescriptorSet,
 	archive *pppb.ProtoArchive,
 	compiler *pppb.ProtoCompiler,
+	sourceMap map[string][]byte,
 ) (*pppb.ProtoPackage, error) {
 
 	protoFiles := make([]*pppb.ProtoFile, len(ds.File))
@@ -243,6 +279,18 @@ func makeProtoPackage(data []byte,
 		if err != nil {
 			return nil, fmt.Errorf("making ProtoFile %d %s: %w", i, *file.Name, err)
 		}
+		var sourceCode string
+		for filename, data := range sourceMap {
+			if strings.HasSuffix(filename, *file.Name) {
+				sourceCode = string(data)
+				delete(sourceMap, filename)
+				break
+			}
+		}
+		if sourceCode == "" {
+			return nil, fmt.Errorf("failed to collect source code for %q", *file.Name)
+		}
+		protoFile.SourceCode = sourceCode
 		protoFiles[i] = protoFile
 	}
 
@@ -258,6 +306,7 @@ func makeProtoPackage(data []byte,
 		Hash:         hash,
 		Dependencies: makeProtoPackageDependencies(),
 	}
+
 	pkg.Name = makeProtoPackageName(pkg)
 
 	return pkg, nil

@@ -1,1 +1,2 @@
 build --protocopt=--experimental_allow_proto3_optional
+# build --protocopt=--include_source_info

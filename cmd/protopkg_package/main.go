@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"sort"
 
@@ -16,7 +17,13 @@ import (
 type flagName string
 
 type config struct {
-	Deps []string `json:"deps"`
+	DirectDeps     []string `json:"direct_deps"`
+	TransitiveDeps []string `json:"transitive_deps"`
+}
+
+type protoPackageFile struct {
+	pkg  *pppb.ProtoPackage
+	file *pppb.ProtoFile
 }
 
 const (
@@ -45,16 +52,24 @@ func run() error {
 		return err
 	}
 
-	var pkgs []*pppb.ProtoPackage
-	for _, filename := range cfg.Deps {
+	var directPkgs []*pppb.ProtoPackage
+	for _, filename := range cfg.DirectDeps {
 		fileDep, err := readProtoPackageFile(configFileJsonFlagName, filename)
 		if err != nil {
 			return err
 		}
-		pkgs = append(pkgs, fileDep)
+		directPkgs = append(directPkgs, fileDep)
+	}
+	var transitivePkgs []*pppb.ProtoPackage
+	for _, filename := range cfg.TransitiveDeps {
+		fileDep, err := readProtoPackageFile(configFileJsonFlagName, filename)
+		if err != nil {
+			return err
+		}
+		transitivePkgs = append(transitivePkgs, fileDep)
 	}
 
-	pkgset, err := makeProtoPackageSet(pkgs)
+	pkgset, err := makeProtoPackageSet(directPkgs, transitivePkgs)
 	if err != nil {
 		return err
 	}
@@ -127,18 +142,27 @@ func writeJsonOutputFile(msg proto.Message, filename string) error {
 	return nil
 }
 
-func makeProtoPackageSet(deps []*pppb.ProtoPackage) (*pppb.ProtoPackageSet, error) {
-	// rep is a representative ProtoPackage.  We assume all deps here have the
-	// same archive and compiler.  (TODO: assert this).
-	rep := deps[0]
-
-	byPackageName := make(map[string][]*pppb.ProtoFile)
-	for _, pkg := range deps {
+func makeProtoPackageSet(directPkgs, transitivePkgs []*pppb.ProtoPackage) (*pppb.ProtoPackageSet, error) {
+	byPackageName := make(map[string][]*protoPackageFile)
+	for _, pkg := range directPkgs {
 		for _, file := range pkg.Files {
 			name := *file.File.Package
-			byPackageName[name] = append(byPackageName[name], file)
+			byPackageName[name] = append(byPackageName[name], &protoPackageFile{
+				file: file,
+				pkg:  pkg,
+			})
 		}
 	}
+	for _, pkg := range transitivePkgs {
+		for _, file := range pkg.Files {
+			name := *file.File.Package
+			byPackageName[name] = append(byPackageName[name], &protoPackageFile{
+				file: file,
+				pkg:  pkg,
+			})
+		}
+	}
+
 	packageNames := make([]string, 0, len(byPackageName))
 	for packageName := range byPackageName {
 		packageNames = append(packageNames, packageName)
@@ -146,14 +170,42 @@ func makeProtoPackageSet(deps []*pppb.ProtoPackage) (*pppb.ProtoPackageSet, erro
 	sort.Strings(packageNames)
 
 	var pkgset pppb.ProtoPackageSet
-
 	for _, packageName := range packageNames {
-		files := byPackageName[packageName]
-		pkg, err := makeProtoPackage(rep.Archive, rep.Compiler, packageName, files)
+		pkgFiles := byPackageName[packageName]
+		files := make([]*pppb.ProtoFile, len(pkgFiles))
+		rep := pkgFiles[0]
+		for i, pkgFile := range pkgFiles {
+			files[i] = pkgFile.file
+		}
+		pkg, err := makeProtoPackage(rep.pkg.Archive, rep.pkg.Compiler, packageName, files)
 		if err != nil {
 			return nil, err
 		}
 		pkgset.Packages = append(pkgset.Packages, pkg)
+	}
+
+	providesFile := make(map[string]*pppb.ProtoPackage)
+	for _, dep := range pkgset.Packages {
+		for _, file := range dep.Files {
+			providesFile[*file.File.Name] = dep
+		}
+	}
+	for _, pkg := range pkgset.Packages {
+		for _, file := range pkg.Files {
+			for _, dep := range file.File.Dependency {
+				provider, ok := providesFile[dep]
+				if !ok {
+					log.Fatalln("unknown provider for:", dep)
+				}
+				log.Println(pkg.Name, dep, "provider:", provider.Name)
+
+				if provider == pkg {
+					continue
+				}
+				pkg.Dependencies = append(pkg.Dependencies, makeProtoPackageDependency(provider))
+				log.Println(pkg.Name, "deps:", pkg.Dependencies)
+			}
+		}
 	}
 
 	return &pkgset, nil
@@ -180,6 +232,14 @@ func makeProtoPackage(archive *pppb.ProtoArchive, compiler *pppb.ProtoCompiler, 
 	}, nil
 }
 
+func makeProtoPackageDependency(pkg *pppb.ProtoPackage) string {
+	root := "~"
+	if pkg.Archive.Root != "" {
+		root = pkg.Archive.Root
+	}
+	return fmt.Sprintf("%s/%s/%s:%s", pkg.Archive.Repository.FullName, pkg.Archive.ShortSha1, root, pkg.Name)
+}
+
 func errorFlagRequired(name flagName) error {
 	return fmt.Errorf("flag required but not provided: -%s", name)
 }
@@ -194,7 +254,16 @@ func protoreflectHash(msg proto.Message) (string, error) {
 }
 
 func makeProtoPackageHash(files []*pppb.ProtoFile) (string, error) {
+	stripped := make([]*pppb.ProtoFile, len(files))
+	for i, file := range files {
+		strip := proto.Clone(file).(*pppb.ProtoFile)
+		strip.SourceCode = ""
+		strip.FileSha256 = ""
+		strip.FileSize = 0
+		strip.File.SourceCodeInfo = nil
+		stripped[i] = strip
+	}
 	return protoreflectHash(&pppb.ProtoPackage{
-		Files: files,
+		Files: stripped,
 	})
 }

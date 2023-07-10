@@ -10,6 +10,8 @@ def _protopkg_file_impl(ctx):
 
     direct_deps = [dep[ProtoFileInfo] for dep in ctx.attr.deps]
     direct_deps_files = depset([info.output_file for info in direct_deps])
+    direct_source_files = proto_info.direct_sources
+    transitive_deps = [dep[ProtoFileInfo].proto_file_transitive_depset for dep in ctx.attr.deps]
 
     args = ctx.actions.args()
     args.add("-proto_descriptor_set_file", proto_descriptor_set_file.path)
@@ -25,13 +27,18 @@ def _protopkg_file_impl(ctx):
         [f.path for f in direct_deps_files.to_list()],
         join_with = ",",
     )
+    args.add_joined(
+        "-proto_source_files",
+        [f.path for f in direct_source_files],
+        join_with = ",",
+    )
 
     # print(" args:", args)
 
     inputs = [
         proto_descriptor_set_file,
         proto_compiler_version_file,
-    ] + direct_deps_files.to_list()
+    ] + direct_source_files + direct_deps_files.to_list()
 
     ctx.actions.run(
         executable = ctx.executable._tool,
@@ -58,6 +65,7 @@ def _protopkg_file_impl(ctx):
             label = ctx.label,
             output_file = ctx.outputs.proto,
             proto_file_direct_deps = direct_deps,
+            proto_file_transitive_depset = depset(direct_deps, transitive = transitive_deps),
             proto_info = proto_info,
         ),
     ]

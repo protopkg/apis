@@ -22,6 +22,7 @@ protopkg_package(
         "@protoapis//google/protobuf:timestamp_file",
         "@protoapis//google/protobuf:type_file",
         "@protoapis//google/protobuf:wrappers_file",
+        "@protoapis//google/protobuf/compiler:plugin_file",
     ],
 )
 
