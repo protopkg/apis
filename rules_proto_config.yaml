@@ -1,5 +1,4 @@
 starlarkPlugins:
-
   - "gazelle/language/protopkg/protopkg_file.star%protopkg_file_plugin"
 starlarkRules:
   - "gazelle/language/protopkg/protopkg_file.star%protopkg_file"

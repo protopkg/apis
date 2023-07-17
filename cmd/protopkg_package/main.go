@@ -206,6 +206,7 @@ func makeProtoPackageSet(directPkgs, transitivePkgs []*pppb.ProtoPackage) (*pppb
 				log.Println(pkg.Name, "deps:", pkg.Dependencies)
 			}
 		}
+		pkg.Dependencies = deduplicateAndSort(pkg.Dependencies)
 	}
 
 	return &pkgset, nil
@@ -266,4 +267,21 @@ func makeProtoPackageHash(files []*pppb.ProtoFile) (string, error) {
 	return protoreflectHash(&pppb.ProtoPackage{
 		Files: stripped,
 	})
+}
+
+// deduplicateAndSort removes duplicate entries and sorts the list
+func deduplicateAndSort(in []string) (out []string) {
+	if len(in) == 0 {
+		return in
+	}
+	seen := make(map[string]bool)
+	for _, v := range in {
+		if seen[v] {
+			continue
+		}
+		seen[v] = true
+		out = append(out, v)
+	}
+	sort.Strings(out)
+	return
 }
