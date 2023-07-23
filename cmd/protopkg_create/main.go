@@ -1,14 +1,18 @@
 package main
 
 import (
+	"context"
 	"crypto/x509"
 	"flag"
 	"fmt"
+	"log"
 	"os"
+	"strings"
 
-	pppb "github.com/stackb/apis/build/stack/protobuf/package/v1alpha1"
+	pppb "github.com/stackb/apis/build/stack/protobuf/package/v1alpha2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
@@ -16,14 +20,14 @@ import (
 type flagName string
 
 const (
-	protoPackageFileFlagName      flagName = "proto_package_file"
+	protoPackageSetFileFlagName   flagName = "output_file"
 	packagesServerAddressFlagName flagName = "packages_server_address"
 	protoOutputFileFlagName       flagName = "proto_out"
 	jsonOutputFileFlagName        flagName = "json_out"
 )
 
 var (
-	protoPackageFile      = flag.String(string(protoPackageFileFlagName), "", "path to the proto package file")
+	protoPackageSetFile   = flag.String(string(protoPackageSetFileFlagName), "", "path to the proto package set file")
 	packagesServerAddress = flag.String(string(packagesServerAddressFlagName), "", "address of the packages server")
 	protoOutputFile       = flag.String(string(protoOutputFileFlagName), "", "path of file to write the generated proto file")
 	jsonOutputFile        = flag.String(string(jsonOutputFileFlagName), "", "path of file to write the generated json file")
@@ -38,7 +42,7 @@ func main() {
 func run() error {
 	flag.Parse()
 
-	pkg, err := readProtoPackageFile(protoPackageFileFlagName, *protoPackageFile)
+	pkg, err := readProtoPackageFileSet(protoPackageSetFileFlagName, *protoPackageSetFile)
 	if err != nil {
 		return err
 	}
@@ -54,12 +58,12 @@ func run() error {
 		return err
 	}
 
-	if protoOutputFile != nil {
+	if *protoOutputFile != "" {
 		if err := writeProtoOutputFile(response, *protoOutputFile); err != nil {
 			return err
 		}
 	}
-	if jsonOutputFile != nil {
+	if *jsonOutputFile != "" {
 		if err := writeJsonOutputFile(response, *jsonOutputFile); err != nil {
 			return err
 		}
@@ -69,13 +73,16 @@ func run() error {
 }
 
 func createPackagesClient(address string) (pppb.PackagesClient, *grpc.ClientConn, error) {
-	pool, err := x509.SystemCertPool()
-	if err != nil {
-		return nil, nil, fmt.Errorf("getting system x509 cert pool: %w", err)
+	var creds credentials.TransportCredentials
+	if strings.HasSuffix(address, ":443") {
+		pool, err := x509.SystemCertPool()
+		if err != nil {
+			return nil, nil, fmt.Errorf("getting system x509 cert pool: %w", err)
+		}
+		creds = credentials.NewClientTLSFromCert(pool, "")
+	} else {
+		creds = insecure.NewCredentials()
 	}
-
-	// var options []grpc.ClientConn
-	creds := credentials.NewClientTLSFromCert(pool, "")
 	conn, err := grpc.Dial(address,
 		grpc.WithTransportCredentials(creds),
 	)
@@ -86,11 +93,29 @@ func createPackagesClient(address string) (pppb.PackagesClient, *grpc.ClientConn
 	return pppb.NewPackagesClient(conn), conn, nil
 }
 
-func sendProtoPackage(pkg *pppb.ProtoPackage, client pppb.PackagesClient) (proto.Message, error) {
-	return nil, fmt.Errorf("not implemented yet")
+func sendProtoPackage(pkgset *pppb.ProtoPackageSet, client pppb.PackagesClient) (proto.Message, error) {
+	ctx := context.Background()
+	stream, err := client.CreateProtoPackage(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("creating client stream call: %w", err)
+	}
+	for _, pkg := range pkgset.Packages {
+		req := &pppb.CreateProtoPackageRequest{
+			Pkg: pkg,
+		}
+		if err := stream.Send(req); err != nil {
+			return nil, fmt.Errorf("sending package %s: %w", req.Pkg.Name, err)
+		}
+		log.Println("uploaded:", pkg.Name)
+	}
+	operation, err := stream.CloseAndRecv()
+	if err != nil {
+		return nil, fmt.Errorf("close-recv stream call: %w", err)
+	}
+	return operation, nil
 }
 
-func readProtoPackageFile(flag flagName, filename string) (*pppb.ProtoPackage, error) {
+func readProtoPackageFileSet(flag flagName, filename string) (*pppb.ProtoPackageSet, error) {
 	if filename == "" {
 		return nil, fmt.Errorf("flag required but not provided: %s", flag)
 	}
@@ -98,7 +123,7 @@ func readProtoPackageFile(flag flagName, filename string) (*pppb.ProtoPackage, e
 	if err != nil {
 		return nil, fmt.Errorf("reading %s: %w", flag, err)
 	}
-	var msg pppb.ProtoPackage
+	var msg pppb.ProtoPackageSet
 	if err := proto.Unmarshal(data, &msg); err != nil {
 		return nil, fmt.Errorf("unmarshaling %s: %w", flag, err)
 	}
@@ -113,6 +138,7 @@ func writeProtoOutputFile(msg proto.Message, filename string) error {
 	if err := os.WriteFile(filename, data, os.ModePerm); err != nil {
 		return fmt.Errorf("writing proto file: %w", err)
 	}
+	log.Println("wrote:", filename)
 	return nil
 }
 
@@ -128,5 +154,6 @@ func writeJsonOutputFile(msg proto.Message, filename string) error {
 	if err := os.WriteFile(filename, []byte(jsonstr), os.ModePerm); err != nil {
 		return fmt.Errorf("writing json file: %w", err)
 	}
+	log.Println("wrote:", filename)
 	return nil
 }

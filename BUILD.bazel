@@ -24,13 +24,25 @@ gazelle_binary(
         "@bazel_gazelle//language/proto:go_default_library",
         "@bazel_gazelle//language/go:go_default_library",
         "@build_stack_rules_proto//language/protobuf",
+        "//gazelle/language/protopkg",
     ],
 )
 
 proto_gazelle(
     name = "gazelle",
+    args = [
+        "-proto_repository_imports_file=$(location @protoapis//:imports.csv)",
+        "-proto_repository_imports_file=$(location @googleapis//:imports.csv)",
+        "-proto_repository_imports_file=$(location @stackbuildapis//:imports.csv)",
+    ],
     cfgs = ["//:rules_proto_config.yaml"],
-    data = ["//gazelle/language/protopkg:starlark"],
+    data = [
+        "//gazelle/language/protopkg:starlark",
+        "@googleapis//:imports.csv",
+        "@protoapis//:imports.csv",
+        "@stackbuildapis//:imports.csv",
+    ],
+    external = "static",
     gazelle = ":gazelle-custom",
     imports = [
         "@googleapis//:imports.csv",

@@ -1,4 +1,4 @@
-workspace(name = "protopkg_apis")
+workspace(name = "com_github_protopkg_protoregistry")
 
 load("//:repositories.bzl", "repositories")
 
@@ -55,8 +55,8 @@ go_core_deps()
 # ----------------------------------------------------
 # @bazel_gazelle
 # ----------------------------------------------------
-# gazelle:repository_macro go_repositories.bzl%go_repositories
 # gazelle:repo bazel_gazelle
+# gazelle:repository_macro go_repositories.bzl%go_repositories
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 

@@ -1,22 +1,25 @@
-load("@build_stack_rules_proto//rules/proto:proto_repository.bzl", "proto_repository")
+load("@build_stack_rules_proto//rules/proto:proto_repository.bzl", "github_proto_repository")
 
 def proto_repositories():
-    proto_repository(
+    github_proto_repository(
         name = "protoapis",
-        source_owner = "protocolbuffers",
-        source_repo = "protobuf",
-        source_commit = "a74f54b724bdc2fe0bfc271f4dc0ceb159805625",
-        source_prefix = "src",
+        owner = "protocolbuffers",
+        repo = "protobuf",
+        commit = "a74f54b724bdc2fe0bfc271f4dc0ceb159805625",
+        prefix = "src",
+        sha256 = "087c2ec84a07308318d35e0e39717e2037e05d14e628244602a2c78fbe203fa5",
+        cfgs = ["//:rules_proto_config.yaml"],
+        reresolve_known_proto_imports = True,
         build_directives = [
             "gazelle:exclude testdata",
+            "gazelle:exclude google/protobuf/bridge",
+            "gazelle:exclude google/protobuf/compiler/cpp",
+            "gazelle:exclude google/protobuf/compiler/java",
             "gazelle:exclude google/protobuf/compiler/ruby",
             "gazelle:exclude google/protobuf/util",
             "gazelle:proto_language go enable true",
             "gazelle:proto_language protopkg enable true",
         ],
-        build_file_expunge = True,
-        build_file_proto_mode = "file",
-        cfgs = ["//:rules_proto_config.yaml"],
         deleted_files = [
             "google/protobuf/map_lite_unittest.proto",
             "google/protobuf/map_proto2_unittest.proto",
@@ -24,6 +27,7 @@ def proto_repositories():
             "google/protobuf/map_unittest.proto",
             "google/protobuf/test_messages_proto2.proto",
             "google/protobuf/test_messages_proto3.proto",
+            "google/protobuf/any_test.proto",
             "google/protobuf/unittest.proto",
             "google/protobuf/unittest_arena.proto",
             "google/protobuf/unittest_custom_options.proto",
@@ -56,61 +60,108 @@ def proto_repositories():
             "google/protobuf/unittest_well_known_types.proto",
             "google/protobuf/compiler/cpp/test_bad_identifiers.proto",
         ],
-        reresolve_known_proto_imports = True,
-        sha256 = "087c2ec84a07308318d35e0e39717e2037e05d14e628244602a2c78fbe203fa5",
-        strip_prefix = "protobuf-a74f54b724bdc2fe0bfc271f4dc0ceb159805625/src",
-        urls = ["https://github.com/protocolbuffers/protobuf/archive/a74f54b724bdc2fe0bfc271f4dc0ceb159805625.tar.gz"],
     )
 
-    proto_repository(
+    github_proto_repository(
         name = "googleapis",
-        source_owner = "googleapis",
-        source_repo = "googleapis",
-        source_commit = "e115ab1839cb6e1bd953e40337b7e84001291766",
+        owner = "googleapis",
+        repo = "googleapis",
+        commit = "e115ab1839cb6e1bd953e40337b7e84001291766",
+        sha256 = "e5b59ae2c0c812e3867158eca8e484fddb96dff03b8e2073bf44242b708fa919",
+        reresolve_known_proto_imports = True,
+        cfgs = ["//:rules_proto_config.yaml"],
+        imports = ["@protoapis//:imports.csv"],
         build_directives = [
             "gazelle:exclude google/ads/googleads/v12/services",
             "gazelle:exclude google/ads/googleads/v13/services",
             "gazelle:exclude google/ads/googleads/v14/services",
             "gazelle:proto_language go enable true",
             "gazelle:proto_language protopkg enable true",
+            "gazelle:proto_rule proto_compile attr args --experimental_allow_proto3_optional",
         ],
-        imports = ["@protoapis//:imports.csv"],
-        build_file_expunge = True,
-        build_file_proto_mode = "file",
-        reresolve_known_proto_imports = True,
+    )
+
+    github_proto_repository(
+        name = "grpcapis",
+        owner = "grpc",
+        repo = "grpc",
+        commit = "3d9f2d8f77a65fe803035580a6f8786f0cb0db77",
+        sha256 = "0b55e170c5f0f9bc1f963ac6deaec01ea438e77fca91a829f904a3bd2754564b",
         cfgs = ["//:rules_proto_config.yaml"],
-        sha256 = "e5b59ae2c0c812e3867158eca8e484fddb96dff03b8e2073bf44242b708fa919",
-        strip_prefix = "googleapis-e115ab1839cb6e1bd953e40337b7e84001291766",
-        urls = ["https://github.com/googleapis/googleapis/archive/e115ab1839cb6e1bd953e40337b7e84001291766.tar.gz"],
+        prefix = "src/proto",
+        imports = ["@protoapis//:imports.csv"],
+        build_directives = [
+            "gazelle:exclude math",
+            "gazelle:exclude grpc/gcp",
+            "gazelle:exclude grpc/status",
+            "gazelle:exclude grpc/testing",
+            "gazelle:proto_language protopkg enable true",
+            "gazelle:proto_rule proto_compile attr args --experimental_allow_proto3_optional",
+        ],
     )
 
     # Branch: master
-    # Commit: c06d514dba1376592c986d1355ae2b15ddd32923
-    # Date: 2023-06-16 22:08:17 +0000 UTC
-    # URL: https://github.com/stackb/apis/commit/c06d514dba1376592c986d1355ae2b15ddd32923
+    # Commit: c75e47dce5a24ccf9a022a16c0189e2aae5f5e37
+    # Date: 2023-06-29 05:59:43 +0000 UTC
+    # URL: https://github.com/stackb/apis/commit/c75e47dce5a24ccf9a022a16c0189e2aae5f5e37
     #
-    # Merge pull request #8 from stackb/proto-source-location
+    # Merge pull request #16 from stackb/package/v1alpha2
     #
-    # Refactor package.proto with source location
-    # Size: 9179 (9.2 kB)
-    proto_repository(
+    # Initial package/v1alpha2
+    # Size: 45757 (46 kB)
+    github_proto_repository(
         name = "stackbuildapis",
-        source_owner = "stackb",
-        source_repo = "apis",
-        source_commit = "c06d514dba1376592c986d1355ae2b15ddd32923",
-        sha256 = "55d1852fc8801107d5bd3deb56c800edf30f4febfbb452913faa2639c6c75023",
-        strip_prefix = "apis-c06d514dba1376592c986d1355ae2b15ddd32923",
-        urls = ["https://github.com/stackb/apis/archive/c06d514dba1376592c986d1355ae2b15ddd32923.tar.gz"],
+        owner = "stackb",
+        repo = "apis",
+        commit = "c75e47dce5a24ccf9a022a16c0189e2aae5f5e37",
+        sha256 = "9cc8961dfdde1be852b05c89a3ef3078c43d78c3ede561908fa90e4f46699d11",
+        cfgs = ["//:rules_proto_config.yaml"],
+        reresolve_known_proto_imports = True,
         imports = [
             "@protoapis//:imports.csv",
             "@googleapis//:imports.csv",
         ],
-        build_file_expunge = True,
-        build_file_proto_mode = "file",
-        reresolve_known_proto_imports = True,
-        cfgs = ["//:rules_proto_config.yaml"],
         build_directives = [
             "gazelle:proto_language go enable true",
+            "gazelle:proto_language protopkg enable true",
+        ],
+    )
+
+    github_proto_repository(
+        name = "remoteapis",
+        owner = "bazelbuild",
+        repo = "remote-apis",
+        commit = "cb8058798964f0adf6dbab2f4c2176ae2d653447",
+        sha256 = "5d67e5aa65b7d95218714828fd647cece4be5949201c21353f5c2be1954b46e6",
+        cfgs = ["//:rules_proto_config.yaml"],
+        reresolve_known_proto_imports = True,
+        imports = [
+            "@protoapis//:imports.csv",
+            "@googleapis//:imports.csv",
+        ],
+        build_directives = [
+            "gazelle:exclude third_party",
+            # "gazelle:exclude build/bazel/remote/asset/v1",
+            # "gazelle:exclude build/bazel/remote/logstream/v1",
+            "gazelle:proto_language protopkg enable true",
+        ],
+    )
+
+    github_proto_repository(
+        name = "bazelapis",
+        owner = "bazelbuild",
+        repo = "bazel",
+        commit = "1da6f4f64180b4648bab167b602a1a878e9b5488",
+        sha256 = "778bbf2cbbf367e090dd77a93dead3eaaf7c58fa2f6e6b0b1c159f294ba4e11a",
+        cfgs = ["//:rules_proto_config.yaml"],
+        reresolve_known_proto_imports = True,
+        imports = [
+            "@googleapis//:imports.csv",
+            "@protoapis//:imports.csv",
+            "@remoteapis//:imports.csv",
+        ],
+        build_directives = [
+            "gazelle:exclude third_party",
             "gazelle:proto_language protopkg enable true",
         ],
     )

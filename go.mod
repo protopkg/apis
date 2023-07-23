@@ -1,23 +1,25 @@
 module github.com/protopkg/apis
 
-go 1.19
+go 1.18
 
 require (
 	github.com/bazelbuild/bazel-gazelle v0.31.1
-	github.com/stackb/rules_proto v0.0.0-20230612182459-3d7eec0c990f
+	github.com/stackb/apis v0.0.0-20230629055943-c75e47dce5a2
+	github.com/stackb/protoreflecthash v0.0.0-20230622204848-b7269c7fa663
+	google.golang.org/grpc v1.56.0
+	google.golang.org/protobuf v1.30.0
 )
 
 require (
+	cloud.google.com/go/longrunning v0.5.0 // indirect
 	github.com/bazelbuild/buildtools v0.0.0-20230510134650-37bd1811516d // indirect
-	github.com/emicklei/proto v1.9.0 // indirect
-	go.starlark.net v0.0.0-20220328144851-d1966c6b9fcd // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	golang.org/x/mod v0.10.0 // indirect
+	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/sys v0.9.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/tools v0.9.1 // indirect
-	google.golang.org/protobuf v1.30.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
-)
-
-replace (
-	github.com/stackb/apis/build/stack/protobuf/package/v1alpha1 => ../../stackb/apis/bazel-bin/build/stack/protobuf/package/v1alpha1/go.mod
+	google.golang.org/genproto v0.0.0-20230530153820-e85fd2cbaebc // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc // indirect
 )
