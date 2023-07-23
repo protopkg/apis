@@ -106,6 +106,7 @@ func sendProtoPackage(pkgset *pppb.ProtoPackageSet, client pppb.PackagesClient) 
 		if err := stream.Send(req); err != nil {
 			return nil, fmt.Errorf("sending package %s: %w", req.Pkg.Name, err)
 		}
+		log.Println("uploaded:", pkg.Name)
 	}
 	operation, err := stream.CloseAndRecv()
 	if err != nil {

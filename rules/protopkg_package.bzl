@@ -127,10 +127,12 @@ _protopkg_create = rule(
 
 def protopkg_package(**kwargs):
     name = kwargs.pop("name")
+    address = kwargs.pop("address", None)
 
     _protopkg_package(name = name, **kwargs)
 
     _protopkg_create(
         name = name + ".create",
         pkg = name,
+        address = address,
     )

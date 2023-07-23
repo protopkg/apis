@@ -10,6 +10,7 @@ load("//rules:protopkg_package.bzl", "protopkg_package")
 
 protopkg_package(
     name = "protobuf",
+    address = "api.protopkg.com:443",
     deps = [
         "@protoapis//google/protobuf:any_file",
         "@protoapis//google/protobuf:api_file",
@@ -28,6 +29,7 @@ protopkg_package(
 
 protopkg_package(
     name = "stackbuild",
+    address = "api.protopkg.com:443",
     deps = [
         "@stackbuildapis//build/stack/bzl/v1beta:application_file",
         "@stackbuildapis//build/stack/protobuf/compiler/v1alpha1:service_file",
@@ -39,6 +41,7 @@ protopkg_package(
 
 protopkg_package(
     name = "googleapis",
+    address = "api.protopkg.com:443",
     deps = [
         "@googleapis//google/actions/sdk/v2:account_linking_file",
         "@googleapis//google/actions/sdk/v2:account_linking_secret_file",
@@ -3969,5 +3972,116 @@ protopkg_package(
         "@googleapis//google/type:quaternion_file",
         "@googleapis//google/type:timeofday_file",
         "@googleapis//google/watcher/v1:watch_file",
+    ],
+)
+
+protopkg_package(
+    name = "cloudrun",
+    address = "api.protopkg.com:443",
+    deps = [
+        "@googleapis//google/cloud/run/v2:condition_file",
+        "@googleapis//google/cloud/run/v2:execution_file",
+        "@googleapis//google/cloud/run/v2:execution_template_file",
+        "@googleapis//google/cloud/run/v2:job_file",
+        "@googleapis//google/cloud/run/v2:min_file",
+        "@googleapis//google/cloud/run/v2:revision_file",
+        "@googleapis//google/cloud/run/v2:revision_template_file",
+        "@googleapis//google/cloud/run/v2:service_file",
+        "@googleapis//google/cloud/run/v2:task_file",
+        "@googleapis//google/cloud/run/v2:task_template_file",
+        "@googleapis//google/cloud/run/v2:traffic_target_file",
+        "@googleapis//google/cloud/run/v2:vendor_settings_file",
+    ],
+)
+
+protopkg_package(
+    name = "cloudtasks",
+    address = "api.protopkg.com:443",
+    deps = [
+        "@googleapis//google/cloud/tasks/v2:cloudtasks_file",
+        "@googleapis//google/cloud/tasks/v2:queue_file",
+        "@googleapis//google/cloud/tasks/v2:target_file",
+        "@googleapis//google/cloud/tasks/v2:task_file",
+        "@googleapis//google/cloud/tasks/v2beta2:cloudtasks_file",
+        "@googleapis//google/cloud/tasks/v2beta2:old_target_file",
+        "@googleapis//google/cloud/tasks/v2beta2:queue_file",
+        "@googleapis//google/cloud/tasks/v2beta2:target_file",
+        "@googleapis//google/cloud/tasks/v2beta2:task_file",
+        "@googleapis//google/cloud/tasks/v2beta3:cloudtasks_file",
+        "@googleapis//google/cloud/tasks/v2beta3:queue_file",
+        "@googleapis//google/cloud/tasks/v2beta3:target_file",
+        "@googleapis//google/cloud/tasks/v2beta3:task_file",
+    ],
+)
+
+protopkg_package(
+    name = "grpc",
+    address = "api.protopkg.com:443",
+    deps = [
+        "@grpcapis//grpc/channelz:channelz_file",
+        "@grpcapis//grpc/health/v1:health_file",
+        "@grpcapis//grpc/lb/v1:load_balancer_file",
+        "@grpcapis//grpc/lb/v1:load_reporter_file",
+        "@grpcapis//grpc/lookup/v1:rls_config_file",
+        "@grpcapis//grpc/lookup/v1:rls_file",
+        "@grpcapis//grpc/reflection/v1:reflection_file",
+        "@grpcapis//grpc/reflection/v1alpha:reflection_file",
+    ],
+)
+
+protopkg_package(
+    name = "remoteapis",
+    address = "api.protopkg.com:443",
+    deps = [
+        "@remoteapis//build/bazel/remote/asset/v1:remote_asset_file",
+        "@remoteapis//build/bazel/remote/execution/v2:remote_execution_file",
+        "@remoteapis//build/bazel/remote/logstream/v1:remote_logstream_file",
+        "@remoteapis//build/bazel/semver:semver_file",
+    ],
+)
+
+protopkg_package(
+    name = "bazelapis",
+    address = "api.protopkg.com:443",
+    deps = [
+        # "@bazelapis//src/java_tools/import_deps_checker/javatests/com/google/devtools/build/importdeps/testdata/j_p_l:p1_file",
+        # "@bazelapis//src/java_tools/import_deps_checker/javatests/com/google/devtools/build/importdeps/testdata/j_p_l:p2_file",
+        "@bazelapis//src/main/java/com/google/devtools/build/lib/bazel/debug:workspace_log_file",
+        "@bazelapis//src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_file",
+        "@bazelapis//src/main/java/com/google/devtools/build/lib/packages/metrics:package_load_metrics_file",
+        "@bazelapis//src/main/java/com/google/devtools/build/lib/packages/metrics:package_metrics_file",
+        "@bazelapis//src/main/java/com/google/devtools/build/lib/skyframe/proto:action_rewind_event_file",
+        "@bazelapis//src/main/java/com/google/devtools/build/lib/starlarkdebug/proto:starlark_debugging_file",
+        "@bazelapis//src/main/java/com/google/devtools/build/skydoc/rendering/proto:stardoc_output_file",
+        "@bazelapis//src/main/java/com/google/devtools/build/skyframe:graph_inconsistency_file",
+        "@bazelapis//src/main/protobuf:action_cache_file",
+        "@bazelapis//src/main/protobuf:analysis_v2_file",
+        "@bazelapis//src/main/protobuf:android_deploy_info_file",
+        "@bazelapis//src/main/protobuf:bazel_flags_file",
+        "@bazelapis//src/main/protobuf:build_file",
+        "@bazelapis//src/main/protobuf:builtin_file",
+        "@bazelapis//src/main/protobuf:command_line_file",
+        "@bazelapis//src/main/protobuf:command_server_file",
+        "@bazelapis//src/main/protobuf:crosstool_config_file",
+        "@bazelapis//src/main/protobuf:deps_file",
+        "@bazelapis//src/main/protobuf:desugar_deps_file",
+        "@bazelapis//src/main/protobuf:execution_graph_file",
+        "@bazelapis//src/main/protobuf:execution_statistics_file",
+        "@bazelapis//src/main/protobuf:extra_actions_base_file",
+        "@bazelapis//src/main/protobuf:failure_details_file",
+        "@bazelapis//src/main/protobuf:invocation_policy_file",
+        "@bazelapis//src/main/protobuf:java_compilation_file",
+        "@bazelapis//src/main/protobuf:memory_pressure_file",
+        "@bazelapis//src/main/protobuf:option_filters_file",
+        "@bazelapis//src/main/protobuf:remote_execution_log_file",
+        "@bazelapis//src/main/protobuf:spawn_file",
+        "@bazelapis//src/main/protobuf:test_status_file",
+        "@bazelapis//src/main/protobuf:worker_protocol_file",
+        "@bazelapis//src/main/protobuf:xcode_config_file",
+        "@bazelapis//src/tools/android/java/com/google/devtools/build/android/desugar/langmodel:desugar_method_attr_file",
+        "@bazelapis//src/tools/android/java/com/google/devtools/build/android/proto:Configuration_file",
+        "@bazelapis//src/tools/android/java/com/google/devtools/build/android/proto:ResourcesInternal_file",
+        "@bazelapis//src/tools/android/java/com/google/devtools/build/android/proto:Resources_file",
+        "@bazelapis//src/tools/android/java/com/google/devtools/build/android/proto:serialize_format_file",
     ],
 )

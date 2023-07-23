@@ -81,6 +81,25 @@ def proto_repositories():
         ],
     )
 
+    github_proto_repository(
+        name = "grpcapis",
+        owner = "grpc",
+        repo = "grpc",
+        commit = "3d9f2d8f77a65fe803035580a6f8786f0cb0db77",
+        sha256 = "0b55e170c5f0f9bc1f963ac6deaec01ea438e77fca91a829f904a3bd2754564b",
+        cfgs = ["//:rules_proto_config.yaml"],
+        prefix = "src/proto",
+        imports = ["@protoapis//:imports.csv"],
+        build_directives = [
+            "gazelle:exclude math",
+            "gazelle:exclude grpc/gcp",
+            "gazelle:exclude grpc/status",
+            "gazelle:exclude grpc/testing",
+            "gazelle:proto_language protopkg enable true",
+            "gazelle:proto_rule proto_compile attr args --experimental_allow_proto3_optional",
+        ],
+    )
+
     # Branch: master
     # Commit: c75e47dce5a24ccf9a022a16c0189e2aae5f5e37
     # Date: 2023-06-29 05:59:43 +0000 UTC
@@ -104,6 +123,45 @@ def proto_repositories():
         ],
         build_directives = [
             "gazelle:proto_language go enable true",
+            "gazelle:proto_language protopkg enable true",
+        ],
+    )
+
+    github_proto_repository(
+        name = "remoteapis",
+        owner = "bazelbuild",
+        repo = "remote-apis",
+        commit = "cb8058798964f0adf6dbab2f4c2176ae2d653447",
+        sha256 = "5d67e5aa65b7d95218714828fd647cece4be5949201c21353f5c2be1954b46e6",
+        cfgs = ["//:rules_proto_config.yaml"],
+        reresolve_known_proto_imports = True,
+        imports = [
+            "@protoapis//:imports.csv",
+            "@googleapis//:imports.csv",
+        ],
+        build_directives = [
+            "gazelle:exclude third_party",
+            # "gazelle:exclude build/bazel/remote/asset/v1",
+            # "gazelle:exclude build/bazel/remote/logstream/v1",
+            "gazelle:proto_language protopkg enable true",
+        ],
+    )
+
+    github_proto_repository(
+        name = "bazelapis",
+        owner = "bazelbuild",
+        repo = "bazel",
+        commit = "1da6f4f64180b4648bab167b602a1a878e9b5488",
+        sha256 = "778bbf2cbbf367e090dd77a93dead3eaaf7c58fa2f6e6b0b1c159f294ba4e11a",
+        cfgs = ["//:rules_proto_config.yaml"],
+        reresolve_known_proto_imports = True,
+        imports = [
+            "@googleapis//:imports.csv",
+            "@protoapis//:imports.csv",
+            "@remoteapis//:imports.csv",
+        ],
+        build_directives = [
+            "gazelle:exclude third_party",
             "gazelle:proto_language protopkg enable true",
         ],
     )
