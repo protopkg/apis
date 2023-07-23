@@ -50,6 +50,8 @@ github.com/peterbourgon/diskv v2.0.1+incompatible/go.mod h1:uqqh8zWWbv1HBMNONnaR
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
 github.com/stackb/apis v0.0.0-20230629055943-c75e47dce5a2 h1:TdQduRW29A8hHJ1JPBVdVghF6V52o3bMKEKsV1Rk8wA=
 github.com/stackb/apis v0.0.0-20230629055943-c75e47dce5a2/go.mod h1:C0bMEDXz5BCxB0d3hxFAKoRHfxGi67i2AD9rz2WEB+E=
+github.com/stackb/apis v0.0.0-20230723215715-f7969e56f12b h1:QpYOHStrxeAvIkNSnIewqyXQt0Hwd9fBjHyjvSUlTSI=
+github.com/stackb/apis v0.0.0-20230723215715-f7969e56f12b/go.mod h1:C0bMEDXz5BCxB0d3hxFAKoRHfxGi67i2AD9rz2WEB+E=
 github.com/stackb/protoreflecthash v0.0.0-20230622204848-b7269c7fa663 h1:tOLG5lU3URfwF9LbD6p/l8tO+yxNQaVfsBNZ36nmlUk=
 github.com/stackb/protoreflecthash v0.0.0-20230622204848-b7269c7fa663/go.mod h1:zecFCufn9E+iqmv6zDhbwTv9pJskfXkZYBqcZIBSPBE=
 go.starlark.net v0.0.0-20210223155950-e043a3d3c984/go.mod h1:t3mmBBPzAVvK0L0n1drDmrQsJ8FoIx4INCqVMTr/Zo0=

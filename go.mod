@@ -6,7 +6,7 @@ require (
 	github.com/bazelbuild/bazel-gazelle v0.31.1
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79
-	github.com/stackb/apis v0.0.0-20230629055943-c75e47dce5a2
+	github.com/stackb/apis v0.0.0-20230723215715-f7969e56f12b
 	github.com/stackb/protoreflecthash v0.0.0-20230622204848-b7269c7fa663
 	google.golang.org/grpc v1.56.0
 	google.golang.org/protobuf v1.30.0

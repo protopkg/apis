@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"flag"
@@ -19,6 +20,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type flagName string
@@ -673,8 +675,18 @@ func makePackagePrefix(prefix string) string {
 	return prefix
 }
 
-func collectArchiveCommitDetails(arvhive *pppb.ProtoArchive) error {
+func collectArchiveCommitDetails(archive *pppb.ProtoArchive) error {
 	ghc := createGithubClient()
+	ctx := context.Background()
+	commit, _, err := ghc.Git.GetCommit(ctx, archive.Repository.Owner, archive.Repository.Name, archive.CommitSha1)
+	if err != nil {
+		return fmt.Errorf("gathering git commit details: %v", err)
+	}
+	// archive.CommitMessage = commit.GetMessage()
+	date := commit.GetAuthor().Date
+	if date != nil {
+		archive.CommitTime = timestamppb.New(*date)
+	}
 	return nil
 }
 
