@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"flag"
@@ -11,11 +12,15 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/google/go-github/github"
+	"github.com/gregjones/httpcache"
+	"github.com/gregjones/httpcache/diskcache"
 	pppb "github.com/stackb/apis/build/stack/protobuf/package/v1alpha2"
 	"github.com/stackb/protoreflecthash"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type flagName string
@@ -138,6 +143,10 @@ func makeProtoArchive() (*pppb.ProtoArchive, error) {
 		Root:       *protoRepositoryRoot,
 	}
 	archive.ShortSha1 = archive.CommitSha1[0:7]
+
+	if err := collectArchiveCommitDetails(archive); err != nil {
+		return nil, err
+	}
 
 	return archive, nil
 }
@@ -664,4 +673,47 @@ func makePackagePrefix(prefix string) string {
 		prefix = "~"
 	}
 	return prefix
+}
+
+func collectArchiveCommitDetails(archive *pppb.ProtoArchive) error {
+	ghc := createGithubClient()
+	ctx := context.Background()
+	commit, _, err := ghc.Git.GetCommit(ctx, archive.Repository.Owner, archive.Repository.Name, archive.CommitSha1)
+	if err != nil {
+		return fmt.Errorf("gathering git commit details: %v", err)
+	}
+	archive.CommitMessage = commit.GetMessage()
+	archive.CommitAuthor = commit.Author.GetEmail()
+	archive.CommitTime = timestamppb.New(commit.GetAuthor().GetDate())
+	return nil
+}
+
+// Create new client.
+func createGithubClient() *github.Client {
+	username := os.Getenv("GITHUB_USER")
+	password := os.Getenv("GITHUB_TOKEN")
+	cacheDir := os.Getenv("GITHUB_CACHE_DIR")
+
+	// Create a BasicAuthTransport if the user has these env var
+	// configured
+	var basicAuth *github.BasicAuthTransport
+	if username != "" && password != "" {
+		basicAuth = &github.BasicAuthTransport{
+			Username: strings.TrimSpace(username),
+			Password: strings.TrimSpace(password),
+		}
+	}
+
+	// Create a cache/transport implementation
+	var cacheTransport *httpcache.Transport
+	cache := diskcache.New(cacheDir)
+	cacheTransport = httpcache.NewTransport(cache)
+
+	// Create a Client
+	if basicAuth != nil {
+		basicAuth.Transport = cacheTransport
+		return github.NewClient(basicAuth.Client())
+	}
+
+	return github.NewClient(cacheTransport.Client())
 }

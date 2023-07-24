@@ -49,23 +49,23 @@ func run() error {
 
 	client, conn, err := createPackagesClient(*packagesServerAddress)
 	if err != nil {
-		return err
+		return fmt.Errorf("create failed: %v", err)
 	}
 	defer conn.Close()
 
 	response, err := sendProtoPackage(pkg, client)
 	if err != nil {
-		return err
+		return fmt.Errorf("send failed: %v", err)
 	}
 
 	if *protoOutputFile != "" {
 		if err := writeProtoOutputFile(response, *protoOutputFile); err != nil {
-			return err
+			return fmt.Errorf("write proto output file failed: %v", err)
 		}
 	}
 	if *jsonOutputFile != "" {
 		if err := writeJsonOutputFile(response, *jsonOutputFile); err != nil {
-			return err
+			return fmt.Errorf("write json output file failed: %v", err)
 		}
 	}
 
@@ -100,11 +100,9 @@ func sendProtoPackage(pkgset *pppb.ProtoPackageSet, client pppb.PackagesClient) 
 		return nil, fmt.Errorf("creating client stream call: %w", err)
 	}
 	for _, pkg := range pkgset.Packages {
-		req := &pppb.CreateProtoPackageRequest{
-			Pkg: pkg,
-		}
+		req := &pppb.CreateProtoPackageRequest{Pkg: pkg}
 		if err := stream.Send(req); err != nil {
-			return nil, fmt.Errorf("sending package %s: %w", req.Pkg.Name, err)
+			return nil, fmt.Errorf("sending package %s: %w", pkg.Name, err)
 		}
 		log.Println("uploaded:", pkg.Name)
 	}

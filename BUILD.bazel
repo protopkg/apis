@@ -10,6 +10,7 @@ exports_files(["rules_proto_config.yaml"])
 # -- Gazelle language "resolve" ---
 # gazelle:resolve go go github.com/stackb/rules_proto/pkg/protoc @build_stack_rules_proto//pkg/protoc
 # gazelle:resolve go go google.golang.org/protobuf/types/descriptorpb @org_golang_google_protobuf//types/descriptorpb
+# gazelle:resolve go go google.golang.org/protobuf/types/known/timestamppb @org_golang_google_protobuf//types/known/timestamppb
 
 # -- Gazelle language "go" ---
 # gazelle:prefix github.com/protopkg/apis

@@ -162,12 +162,35 @@ def go_repositories():
         version = "v1.5.3",
     )
     go_repository(
+        name = "com_github_google_btree",
+        build_file_proto_mode = "disable_global",
+        importpath = "github.com/google/btree",
+        sum = "h1:xf4v41cLI2Z6FxbKm+8Bu+m8ifhj15JuZ9sa0jZCMUU=",
+        version = "v1.1.2",
+    )
+
+    go_repository(
         name = "com_github_google_go_cmp",
         build_file_proto_mode = "disable_global",
         importpath = "github.com/google/go-cmp",
         sum = "h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=",
         version = "v0.5.9",
     )
+    go_repository(
+        name = "com_github_google_go_github",
+        build_file_proto_mode = "disable_global",
+        importpath = "github.com/google/go-github",
+        sum = "h1:N0LgJ1j65A7kfXrZnUDaYCs/Sf4rEjNlfyDHW9dolSY=",
+        version = "v17.0.0+incompatible",
+    )
+    go_repository(
+        name = "com_github_google_go_querystring",
+        build_file_proto_mode = "disable_global",
+        importpath = "github.com/google/go-querystring",
+        sum = "h1:AnCroh3fv4ZBgVIf1Iwtovgjaw/GiKJo8M8yD/fhyJ8=",
+        version = "v1.1.0",
+    )
+
     go_repository(
         name = "com_github_google_s2a_go",
         build_file_proto_mode = "disable_global",
@@ -198,6 +221,21 @@ def go_repositories():
         version = "v2.10.0",
     )
     go_repository(
+        name = "com_github_gregjones_httpcache",
+        build_file_proto_mode = "disable_global",
+        importpath = "github.com/gregjones/httpcache",
+        sum = "h1:+ngKgrYPPJrOjhax5N+uePQ0Fh1Z7PheYoUI/0nzkPA=",
+        version = "v0.0.0-20190611155906-901d90724c79",
+    )
+    go_repository(
+        name = "com_github_peterbourgon_diskv",
+        build_file_proto_mode = "disable_global",
+        importpath = "github.com/peterbourgon/diskv",
+        sum = "h1:UBdAOUP5p4RWqPBg048CAvpKN+vxiaj6gdUUzhl4XmI=",
+        version = "v2.0.1+incompatible",
+    )
+
+    go_repository(
         name = "com_github_pmezard_go_difflib",
         build_file_proto_mode = "disable_global",
         importpath = "github.com/pmezard/go-difflib",
@@ -216,8 +254,8 @@ def go_repositories():
         name = "com_github_stackb_apis",
         build_file_proto_mode = "disable_global",
         importpath = "github.com/stackb/apis",
-        sum = "h1:TdQduRW29A8hHJ1JPBVdVghF6V52o3bMKEKsV1Rk8wA=",
-        version = "v0.0.0-20230629055943-c75e47dce5a2",
+        sum = "h1:QpYOHStrxeAvIkNSnIewqyXQt0Hwd9fBjHyjvSUlTSI=",
+        version = "v0.0.0-20230723215715-f7969e56f12b",
     )
     go_repository(
         name = "com_github_stackb_protoreflecthash",
