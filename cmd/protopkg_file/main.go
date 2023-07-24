@@ -682,11 +682,9 @@ func collectArchiveCommitDetails(archive *pppb.ProtoArchive) error {
 	if err != nil {
 		return fmt.Errorf("gathering git commit details: %v", err)
 	}
-	// archive.CommitMessage = commit.GetMessage()
-	date := commit.GetAuthor().Date
-	if date != nil {
-		archive.CommitTime = timestamppb.New(*date)
-	}
+	archive.CommitMessage = commit.GetMessage()
+	archive.CommitAuthor = commit.Author.GetEmail()
+	archive.CommitTime = timestamppb.New(commit.GetAuthor().GetDate())
 	return nil
 }
 

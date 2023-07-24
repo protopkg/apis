@@ -6,10 +6,14 @@ go_library(
     importpath = "github.com/protopkg/apis/cmd/protopkg_file",
     visibility = ["//visibility:private"],
     deps = [
+        "@com_github_google_go_github//github",
+        "@com_github_gregjones_httpcache//:httpcache",
+        "@com_github_gregjones_httpcache//diskcache",
         "@com_github_stackb_protoreflecthash//:protoreflecthash",
         "@org_golang_google_protobuf//encoding/protojson",
         "@org_golang_google_protobuf//proto",
         "@org_golang_google_protobuf//types/descriptorpb",
+        "@org_golang_google_protobuf//types/known/timestamppb",
         "@stackbuildapis//build/stack/protobuf/package/v1alpha2:package_go_proto",
     ],
 )
